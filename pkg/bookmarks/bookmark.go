@@ -61,3 +61,10 @@ func (b *BookmarkManager) Edit(bookmark Bookmark, category string) Bookmark {
 	//	return b.Save(bookmark, category)
 	return bookmark
 }
+
+func (b *BookmarkManager) Remove(title, category string) error {
+	folderTitle := utils.ScrubFolder(title)
+	bookmarklocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, category, folderTitle)
+
+	return utils.RemoveFolder(bookmarklocation)
+}

@@ -32,6 +32,14 @@ func CreateFile(folder, filename string) bool {
 	return true
 }
 
+func RemoveFolder(folder string) error {
+	if _, err := os.Stat(folder); os.IsNotExist(err) {
+		return err
+	}
+
+	return os.RemoveAll(folder)
+}
+
 func ScrubFolder(folder string) string {
 
 	r := strings.NewReplacer(

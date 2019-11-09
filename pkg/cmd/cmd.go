@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/evcraddock/bm/pkg/cmd/insert"
+	"github.com/evcraddock/bm/pkg/cmd/remove"
 )
 
 func NewDefaultCommand() *cobra.Command {
@@ -22,6 +23,7 @@ func NewBookmarkCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	}
 
 	cmds.AddCommand(insert.NewCmdInsert(out))
+	cmds.AddCommand(remove.NewCmdRemove(out))
 
 	return cmds
 }
