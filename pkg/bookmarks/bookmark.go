@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -13,10 +14,10 @@ import (
 )
 
 type Bookmark struct {
-	URL      string   `yaml:"url"`
 	Title    string   `yaml:"title"`
-	Author   string   `yaml:"author"`
-	Tags     []string `yaml:"tags"`
+	URL      string   `yaml:"url"`
+	Author   string   `yaml:"author,omitempty"`
+	Tags     []string `yaml:"tags,omitempty"`
 	location string
 }
 
@@ -36,14 +37,11 @@ func NewBookmarkManager(cfg *config.Config, interactive bool, category string) *
 	}
 }
 
-func (b *BookmarkManager) Load(title string) (*Bookmark, error) {
-	folderTitle := utils.ScrubFolder(title)
-	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
-
+func (b *BookmarkManager) Load(bookmarkLocation string) (*Bookmark, error) {
 	bookmarkfile, err := ioutil.ReadFile(bookmarkLocation + "/index.bm")
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("The bookmark %s does not exist", title)
+			return nil, fmt.Errorf("The bookmark %s does not exist", bookmarkLocation)
 		}
 
 		return nil, err
@@ -56,14 +54,29 @@ func (b *BookmarkManager) Load(title string) (*Bookmark, error) {
 	return bookmark, err
 }
 
+func (b *BookmarkManager) LoadBookmarks() ([]*Bookmark, error) {
+	bookmarkLocation := fmt.Sprintf("%s/%s", b.bookmarkFolder, b.category)
+	var bookmarks []*Bookmark
+
+	_ = filepath.Walk(bookmarkLocation, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			if bookmark, err := b.Load(path); err == nil {
+				bookmarks = append(bookmarks, bookmark)
+			}
+		}
+
+		return nil
+	})
+
+	return bookmarks, fmt.Errorf("%s does not exist\n", bookmarkLocation)
+
+}
+
 func (b *BookmarkManager) Save(bookmark *Bookmark) error {
-	// folderTitle := utils.ScrubFolder(bookmark.Title)
-	// saveLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
-
-	// if ok := utils.CreateFolder(saveLocation); !ok {
-	// 	// return fmt.Errorf("Bookmark %s exists \n", bookmark.Title)
-	// }
-
 	data, err := yaml.Marshal(bookmark)
 	if err != nil {
 		return err
@@ -101,7 +114,10 @@ func (b *BookmarkManager) Create(title, url string) error {
 }
 
 func (b *BookmarkManager) Update(title string) error {
-	bookmark, err := b.Load(title)
+	folderTitle := utils.ScrubFolder(title)
+	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
+
+	bookmark, err := b.Load(bookmarkLocation)
 	if err != nil {
 		return err
 	}
