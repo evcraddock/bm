@@ -55,8 +55,8 @@ func (o *RemoveOptions) prepare(cmd *cobra.Command, args []string) {
 }
 
 func (o *RemoveOptions) removeBookmark() {
-	manager := bookmarks.NewBookmarkManager(o.Config, false)
-	err := manager.Remove(o.Title, o.Category)
+	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
+	err := manager.Remove(o.Title)
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Fprintf(o.Out, "bookmark %s/%s does not exist \n", o.Category, o.Title)

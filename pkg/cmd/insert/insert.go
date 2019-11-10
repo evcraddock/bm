@@ -33,7 +33,6 @@ func NewCmdInsert(out io.Writer) *cobra.Command {
 		Use: "insert",
 		Run: func(cmd *cobra.Command, args []string) {
 			o.prepare(cmd, args)
-			o.validate()
 			o.addBookmark()
 		},
 	}
@@ -63,24 +62,19 @@ func (o *InsertOptions) prepare(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if len(args) < 2 {
+		fmt.Fprintf(o.Out, "incorrect number of arguments\n")
+		os.Exit(1)
+	}
+
 	o.Config = cfg
 	o.Title = args[0]
 	o.URL = args[1]
 }
 
-func (o *InsertOptions) validate() {
-	//TODO: validate inputs
-}
-
 func (o *InsertOptions) addBookmark() {
-	bookmark := bookmarks.Bookmark{
-		Title: o.Title,
-		URL:   o.URL,
-	}
-
-	manager := bookmarks.NewBookmarkManager(o.Config, o.Interactive)
-	err := manager.Save(bookmark, o.Category)
-
+	manager := bookmarks.NewBookmarkManager(o.Config, o.Interactive, o.Category)
+	err := manager.Create(o.Title, o.URL)
 	if err != nil {
 		fmt.Fprintf(o.Out, "%s", err.Error())
 	}

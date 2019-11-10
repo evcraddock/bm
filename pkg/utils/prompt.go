@@ -10,12 +10,16 @@ import (
 
 const REQUIRED_MESSAGE = "%s is required"
 
-func InputStringPrompt(label string, validate func(label, value, message string) error) string {
+func InputStringPrompt(label, defaultValue string, validate func(label, value, message string) error) string {
 	input := bufio.NewScanner(os.Stdin)
 
-	fmt.Printf("%s: ", label)
+	fmt.Printf("%s (%s): ", label, defaultValue)
 	for input.Scan() {
 		inputValue := input.Text()
+
+		if inputValue == "" {
+			inputValue = defaultValue
+		}
 
 		err := validate(label, inputValue, REQUIRED_MESSAGE)
 		if err == nil {
@@ -29,16 +33,16 @@ func InputStringPrompt(label string, validate func(label, value, message string)
 	return ""
 }
 
-func StringPrompt(label string) string {
-	return InputStringPrompt(label, RequiredInputValidator)
+func StringPrompt(label, value string) string {
+	return InputStringPrompt(label, value, RequiredInputValidator)
 }
 
-func ListPrompt(label string) []string {
-	csvlist := InputStringPrompt(label, NotRequiredInputValidator)
+func ListPrompt(label, value string) []string {
+	csvlist := InputStringPrompt(label, value, NotRequiredInputValidator)
 	reg, err := regexp.Compile("[^a-zA-Z0-9,]+")
 	if err != nil {
 		fmt.Printf("Invalid list")
-		return ListPrompt(label)
+		return ListPrompt(label, value)
 	}
 
 	scrubbed := reg.ReplaceAllString(csvlist, "")
