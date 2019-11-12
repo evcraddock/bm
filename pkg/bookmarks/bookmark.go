@@ -37,9 +37,16 @@ func NewBookmarkManager(cfg *config.Config, interactive bool, category string) *
 	}
 }
 
+func (b *BookmarkManager) GetBookmarkLocation(title string) string {
+
+	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, title)
+	return bookmarkLocation
+}
+
 func (b *BookmarkManager) Load(bookmarkLocation string) (*Bookmark, error) {
 	bookmarkfile, err := ioutil.ReadFile(bookmarkLocation + "/index.bm")
 	if err != nil {
+		fmt.Printf("location: %s/index.bm\n", bookmarkLocation)
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("The bookmark %s does not exist", bookmarkLocation)
 		}
@@ -58,21 +65,19 @@ func (b *BookmarkManager) LoadBookmarks() ([]*Bookmark, error) {
 	bookmarkLocation := fmt.Sprintf("%s/%s", b.bookmarkFolder, b.category)
 	var bookmarks []*Bookmark
 
-	_ = filepath.Walk(bookmarkLocation, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
+	err := filepath.Walk(bookmarkLocation, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
-			if bookmark, err := b.Load(path); err == nil {
+			bookmark, err := b.Load(path)
+			if err == nil {
 				bookmarks = append(bookmarks, bookmark)
 			}
+
 		}
 
 		return nil
 	})
 
-	return bookmarks, fmt.Errorf("%s does not exist\n", bookmarkLocation)
+	return bookmarks, err
 
 }
 
