@@ -1,4 +1,4 @@
-package list
+package cmd
 
 import (
 	"fmt"
@@ -9,27 +9,14 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/evcraddock/bm/pkg/bookmarks"
-	"github.com/evcraddock/bm/pkg/config"
 )
 
-type ListOptions struct {
-	Out      io.Writer
-	Config   *config.Config
-	Category string
-}
-
-func NewListOptions(out io.Writer) *ListOptions {
-	return &ListOptions{
-		Out: out,
-	}
-}
-
 func NewCmdList(out io.Writer) *cobra.Command {
-	o := NewListOptions(out)
+	o := NewBaseOptions(out)
 	cmd := &cobra.Command{
 		Use: "list",
 		Run: func(cmd *cobra.Command, args []string) {
-			o.prepare(cmd)
+			o.prepare(cmd, args)
 			o.listBookmarks()
 		},
 	}
@@ -39,22 +26,7 @@ func NewCmdList(out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func (o *ListOptions) prepare(cmd *cobra.Command) {
-	if category, err := cmd.Flags().GetString("category"); err == nil {
-		o.Category = category
-	}
-
-	cfg, err := config.LoadConfigFile()
-	if err != nil {
-		fmt.Fprintf(o.Out, "%s", err.Error())
-		os.Exit(1)
-	}
-
-	o.Config = cfg
-
-}
-
-func (o *ListOptions) listBookmarks() {
+func (o *baseOptions) listBookmarks() {
 	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
 
 	bookmarks, err := manager.LoadBookmarks()
