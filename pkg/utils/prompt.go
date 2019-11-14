@@ -8,8 +8,9 @@ import (
 	"strings"
 )
 
-const REQUIRED_MESSAGE = "%s is required"
+const requiredMessage = "%s is required"
 
+// InputStringPrompt prompts for a string
 func InputStringPrompt(label, defaultValue string, validate func(label, value, message string) error) string {
 	input := bufio.NewScanner(os.Stdin)
 
@@ -21,7 +22,7 @@ func InputStringPrompt(label, defaultValue string, validate func(label, value, m
 			inputValue = defaultValue
 		}
 
-		err := validate(label, inputValue, REQUIRED_MESSAGE)
+		err := validate(label, inputValue, requiredMessage)
 		if err == nil {
 			return inputValue
 		}
@@ -33,10 +34,12 @@ func InputStringPrompt(label, defaultValue string, validate func(label, value, m
 	return ""
 }
 
+// StringPrompt prompts for a string - value is required
 func StringPrompt(label, value string) string {
 	return InputStringPrompt(label, value, RequiredInputValidator)
 }
 
+// ListPrompt prompts for a comma delimited string returns a string array
 func ListPrompt(label, value string) []string {
 	csvlist := InputStringPrompt(label, value, NotRequiredInputValidator)
 	reg, err := regexp.Compile("[^a-zA-Z0-9,]+")
@@ -55,6 +58,7 @@ func ListPrompt(label, value string) []string {
 	return list
 }
 
+// RequiredInputValidator validates an input value to ensure it has a value
 func RequiredInputValidator(label, input, message string) error {
 	if len(strings.TrimSpace(input)) < 1 {
 		return fmt.Errorf(message, label)
@@ -63,6 +67,7 @@ func RequiredInputValidator(label, input, message string) error {
 	return nil
 }
 
+// NotRequiredInputValidator a validator which does not require a value
 func NotRequiredInputValidator(label, input, message string) error {
 	return nil
 }

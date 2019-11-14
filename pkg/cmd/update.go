@@ -9,6 +9,7 @@ import (
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
 
+// NewCmdUpdate creates new update command
 func NewCmdUpdate(out io.Writer) *cobra.Command {
 	o := NewBaseOptions(out)
 	cmd := &cobra.Command{
@@ -24,7 +25,7 @@ func NewCmdUpdate(out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func (o *baseOptions) updateBookmark() {
+func (o *BaseOptions) updateBookmark() {
 	manager := bookmarks.NewBookmarkManager(o.Config, true, o.Category)
 	err := manager.Update(o.Title)
 	if err != nil {

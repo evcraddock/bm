@@ -11,10 +11,12 @@ import (
 	"github.com/evcraddock/bm/pkg/config"
 )
 
+// NewDefaultCommand creates a new cobra.Command
 func NewDefaultCommand() *cobra.Command {
 	return NewBookmarkCommand(os.Stdin, os.Stdout, os.Stderr)
 }
 
+// NewBookmarkCommand creates a new bookmark command
 func NewBookmarkCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	cmds := &cobra.Command{
 		Use:   "bm",
@@ -36,7 +38,8 @@ func runHelp(cmd *cobra.Command, args []string) {
 	cmd.Help()
 }
 
-type baseOptions struct {
+// BaseOptions default options for a command
+type BaseOptions struct {
 	Out         io.Writer
 	Config      *config.Config
 	Category    string
@@ -45,13 +48,14 @@ type baseOptions struct {
 	URL         string
 }
 
-func NewBaseOptions(out io.Writer) *baseOptions {
-	return &baseOptions{
+// NewBaseOptions creates a new baseOptions
+func NewBaseOptions(out io.Writer) *BaseOptions {
+	return &BaseOptions{
 		Out: out,
 	}
 }
 
-func (o *baseOptions) prepare(cmd *cobra.Command, args []string) {
+func (o *BaseOptions) prepare(cmd *cobra.Command, args []string) {
 	o.Interactive = false
 	if interactive, err := cmd.Flags().GetString("interactive"); err == nil {
 		boolval, err := strconv.ParseBool(interactive)

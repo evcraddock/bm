@@ -12,10 +12,13 @@ import (
 )
 
 const (
-	ConfigFileName = "config.yaml"
+	configFileName = "config.yaml"
 )
 
+// HomeDirectory the users home directory
 var HomeDirectory string
+
+// ConfigFilePath the path to the config file
 var ConfigFilePath string
 
 func init() {
@@ -28,20 +31,23 @@ func init() {
 	ConfigFilePath = HomeDirectory + "/.config/bm/"
 }
 
+// Config configuration data
 type Config struct {
 	BookmarkFolder string `yaml:"bookmarkFolder"`
 }
 
-func ConfigFileExists() bool {
-	if configfile, err := os.Stat(path.Join(ConfigFilePath, ConfigFileName)); err != nil || configfile.IsDir() {
+// FileExists returns a boolean for whether the config file exists
+func FileExists() bool {
+	if configfile, err := os.Stat(path.Join(ConfigFilePath, configFileName)); err != nil || configfile.IsDir() {
 		return false
 	}
 
 	return true
 }
 
+// LoadConfigFile loads the config file from the ConfigFilePath
 func LoadConfigFile() (*Config, error) {
-	viper.SetConfigFile(path.Join(ConfigFilePath, ConfigFileName))
+	viper.SetConfigFile(path.Join(ConfigFilePath, configFileName))
 	err := viper.ReadInConfig()
 	if err != nil {
 		return nil, err
@@ -52,8 +58,9 @@ func LoadConfigFile() (*Config, error) {
 	}, nil
 }
 
+// SaveConfigFile saves the config file to the ConfigFilePath
 func SaveConfigFile(cfg *Config) error {
-	if ok := utils.CreateFile(ConfigFilePath, ConfigFileName); !ok {
+	if ok := utils.CreateFile(ConfigFilePath, configFileName); !ok {
 		return fmt.Errorf("Unable to create config file")
 	}
 
@@ -63,6 +70,7 @@ func SaveConfigFile(cfg *Config) error {
 	return viper.WriteConfig()
 }
 
+// CreateDefaultConfig creates a default config file if one does not already exist
 func CreateDefaultConfig() error {
 	return SaveConfigFile(&Config{
 		BookmarkFolder: HomeDirectory + "/.local/bookmarks",

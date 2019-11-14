@@ -11,6 +11,7 @@ import (
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
 
+// NewCmdList creates new list command
 func NewCmdList(out io.Writer) *cobra.Command {
 	o := NewBaseOptions(out)
 	cmd := &cobra.Command{
@@ -26,7 +27,7 @@ func NewCmdList(out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func (o *baseOptions) listBookmarks() {
+func (o *BaseOptions) listBookmarks() {
 	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
 
 	bookmarks, err := manager.LoadBookmarks()

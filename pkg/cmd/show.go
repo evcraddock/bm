@@ -11,6 +11,7 @@ import (
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
 
+// NewCmdShow creates new show command
 func NewCmdShow(out io.Writer) *cobra.Command {
 	o := NewBaseOptions(out)
 	cmd := &cobra.Command{
@@ -26,7 +27,7 @@ func NewCmdShow(out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func (o *baseOptions) showBookmark() {
+func (o *BaseOptions) showBookmark() {
 	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
 	bookmarkLocation := manager.GetBookmarkLocation(o.Title)
 	bookmark, err := manager.Load(bookmarkLocation)

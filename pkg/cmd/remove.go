@@ -10,6 +10,7 @@ import (
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
 
+// NewCmdRemove creates new remove command
 func NewCmdRemove(out io.Writer) *cobra.Command {
 	o := NewBaseOptions(out)
 	cmd := &cobra.Command{
@@ -25,7 +26,7 @@ func NewCmdRemove(out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func (o *baseOptions) removeBookmark() {
+func (o *BaseOptions) removeBookmark() {
 	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
 	err := manager.Remove(o.Title)
 	if err != nil {

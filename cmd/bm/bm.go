@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	if ok := config.ConfigFileExists(); !ok {
+	if ok := config.FileExists(); !ok {
 		err := config.CreateDefaultConfig()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)

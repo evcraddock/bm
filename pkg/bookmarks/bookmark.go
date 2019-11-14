@@ -13,6 +13,7 @@ import (
 	"github.com/evcraddock/bm/pkg/utils"
 )
 
+// Bookmark bookmark data
 type Bookmark struct {
 	Title    string   `yaml:"title"`
 	URL      string   `yaml:"url"`
@@ -21,14 +22,14 @@ type Bookmark struct {
 	location string
 }
 
-type Bookmarks []Bookmark
-
+// BookmarkManager manages a bookmark
 type BookmarkManager struct {
 	bookmarkFolder string
 	interactive    bool
 	category       string
 }
 
+// NewBookmarkManager creates new BookmarkManager
 func NewBookmarkManager(cfg *config.Config, interactive bool, category string) *BookmarkManager {
 	return &BookmarkManager{
 		bookmarkFolder: cfg.BookmarkFolder,
@@ -37,12 +38,14 @@ func NewBookmarkManager(cfg *config.Config, interactive bool, category string) *
 	}
 }
 
+// GetBookmarkLocation return the folder location where bookmarks are stored
 func (b *BookmarkManager) GetBookmarkLocation(title string) string {
 
 	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, title)
 	return bookmarkLocation
 }
 
+// Load loads a Bookmark from a file
 func (b *BookmarkManager) Load(bookmarkLocation string) (*Bookmark, error) {
 	bookmarkfile, err := ioutil.ReadFile(bookmarkLocation + "/index.bm")
 	if err != nil {
@@ -61,6 +64,7 @@ func (b *BookmarkManager) Load(bookmarkLocation string) (*Bookmark, error) {
 	return bookmark, err
 }
 
+// LoadBookmarks returns a list of bookmarks
 func (b *BookmarkManager) LoadBookmarks() ([]*Bookmark, error) {
 	bookmarkLocation := fmt.Sprintf("%s/%s", b.bookmarkFolder, b.category)
 	var bookmarks []*Bookmark
@@ -81,6 +85,7 @@ func (b *BookmarkManager) LoadBookmarks() ([]*Bookmark, error) {
 
 }
 
+// Save saves a bookmark
 func (b *BookmarkManager) Save(bookmark *Bookmark) error {
 	data, err := yaml.Marshal(bookmark)
 	if err != nil {
@@ -92,10 +97,15 @@ func (b *BookmarkManager) Save(bookmark *Bookmark) error {
 		return err
 	}
 
+	if err := b.savePreview(bookmark.URL, bookmark.location); err != nil {
+		return err
+	}
+
 	fmt.Printf("Saved Bookmark %s\n", bookmark.Title)
 	return nil
 }
 
+// Create save a new bookmark
 func (b *BookmarkManager) Create(title, url string) error {
 	bookmark := &Bookmark{
 		Title: title,
@@ -115,9 +125,10 @@ func (b *BookmarkManager) Create(title, url string) error {
 		return nil
 	}
 
-	return fmt.Errorf("Bookmark %s already exists \n", title)
+	return fmt.Errorf("bookmark %s already exists", title)
 }
 
+// Update updates and existing bookmark
 func (b *BookmarkManager) Update(title string) error {
 	folderTitle := utils.ScrubFolder(title)
 	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
@@ -143,6 +154,7 @@ func (b *BookmarkManager) Update(title string) error {
 	return nil
 }
 
+// Edit prompts for changes to a bookmark
 func (b *BookmarkManager) Edit(bookmark *Bookmark) *Bookmark {
 	fmt.Printf("To keep current value press return\n")
 	title := utils.StringPrompt("Title", bookmark.Title)
@@ -161,6 +173,7 @@ func (b *BookmarkManager) Edit(bookmark *Bookmark) *Bookmark {
 	return newBookMark
 }
 
+// Remove removes a bookmark
 func (b *BookmarkManager) Remove(title string) error {
 	folderTitle := utils.ScrubFolder(title)
 	bookmarklocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
