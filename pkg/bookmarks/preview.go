@@ -20,6 +20,7 @@ type urlImage struct {
 
 type preview struct {
 	Title          string
+	URL            string
 	Description    string
 	BannerImageURL string
 }
@@ -30,7 +31,7 @@ const previewTemplate = `
 		<body>
 			<div style='width: 400px'>
 				<div><img alt='{{.Title}}' width='400px' height='200px' src='{{.BannerImageURL}}' /></div>
-				<div style='width: 400px'>Title: {{.Title}}</div>
+				<div style='width: 400px'>Title: <a href='{{.URL}}'>{{.Title}}</a></div>
 				<div style='width: 400px'>Description: {{.Description}}</div>
 			</div>
 		</body>
@@ -64,6 +65,7 @@ func (b *BookmarkManager) savePreview(url, location string) error {
 
 	data := preview{
 		Title:          title,
+		URL:            url,
 		Description:    description,
 		BannerImageURL: bannerImageURL,
 	}
