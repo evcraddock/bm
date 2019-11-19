@@ -2,8 +2,13 @@ package bookmarks
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"strings"
 
 	"github.com/philipjkim/goreadability"
 )
@@ -50,7 +55,11 @@ func (b *BookmarkManager) savePreview(url, location string) error {
 	var bannerImageURL string
 
 	if len(content.Images) > 0 {
-		bannerImageURL = content.Images[0].URL
+		imageURL := content.Images[0].URL
+		bannerImageURL, err = downloadImage(imageURL, location)
+		if err != nil {
+			fmt.Printf("unable to download image %s \n", imageURL)
+		}
 	}
 
 	data := preview{
@@ -66,4 +75,30 @@ func (b *BookmarkManager) savePreview(url, location string) error {
 	}
 
 	return ioutil.WriteFile(location+"/preview.html", buf.Bytes(), 0644)
+}
+
+func downloadImage(url, location string) (string, error) {
+	extarr := strings.Split(url, ".")
+	if len(extarr) == 0 {
+		return "", fmt.Errorf("invalid url")
+	}
+
+	ext := extarr[len(extarr)-1]
+	res, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+
+	defer res.Body.Close()
+	imageLocation := fmt.Sprintf("%s/banner.%s", location, ext)
+
+	file, err := os.Create(imageLocation)
+	if err != nil {
+		return "", err
+	}
+
+	defer file.Close()
+
+	_, err = io.Copy(file, res.Body)
+	return imageLocation, err
 }
