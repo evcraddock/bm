@@ -71,26 +71,3 @@ func RequiredInputValidator(label, input, message string) error {
 func NotRequiredInputValidator(label, input, message string) error {
 	return nil
 }
-
-func toList(csv string) []string {
-	var list []string
-
-	strlist := strings.Split(csv, ",")
-	for _, n := range strlist {
-		if ok := contains(list, n); !ok {
-			list = append(list, n)
-		}
-	}
-
-	return list
-}
-
-func contains(a []string, x string) bool {
-	for _, n := range a {
-		if x == n {
-			return true
-		}
-	}
-
-	return false
-}

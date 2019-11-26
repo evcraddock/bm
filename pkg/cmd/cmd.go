@@ -8,6 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/evcraddock/bm/pkg/app"
+	"github.com/evcraddock/bm/pkg/bookmarks"
 	"github.com/evcraddock/bm/pkg/config"
 )
 
@@ -18,12 +20,18 @@ func NewDefaultCommand() *cobra.Command {
 
 // NewBookmarkCommand creates a new bookmark command
 func NewBookmarkCommand(in io.Reader, out, err io.Writer) *cobra.Command {
+	o := NewBaseOptions(out)
 	cmds := &cobra.Command{
 		Use:   "bm",
 		Short: "bm manages bookmark lists",
 		Long:  "bm manages bookmark lists",
-		Run:   runHelp,
+		Run: func(cmd *cobra.Command, args []string) {
+			o.prepare(cmd, args)
+			o.startApp()
+		},
 	}
+
+	cmds.Flags().String("category", "readlater", "category folder")
 
 	cmds.AddCommand(NewCmdInsert(out))
 	cmds.AddCommand(NewCmdRemove(out))
@@ -32,10 +40,6 @@ func NewBookmarkCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 	cmds.AddCommand(NewCmdShow(out))
 
 	return cmds
-}
-
-func runHelp(cmd *cobra.Command, args []string) {
-	cmd.Help()
 }
 
 // BaseOptions default options for a command
@@ -83,4 +87,11 @@ func (o *BaseOptions) prepare(cmd *cobra.Command, args []string) {
 	if len(args) > 1 {
 		o.URL = args[1]
 	}
+}
+
+func (o *BaseOptions) startApp() {
+	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
+
+	bmApp := app.NewBookmarkApp(manager)
+	bmApp.Load()
 }
