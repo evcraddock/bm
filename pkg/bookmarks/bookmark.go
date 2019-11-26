@@ -49,7 +49,6 @@ func (b *BookmarkManager) GetBookmarkLocation(title string) string {
 func (b *BookmarkManager) Load(bookmarkLocation string) (*Bookmark, error) {
 	bookmarkfile, err := ioutil.ReadFile(bookmarkLocation + "/index.bm")
 	if err != nil {
-		fmt.Printf("location: %s/index.bm\n", bookmarkLocation)
 		if os.IsNotExist(err) {
 			return nil, fmt.Errorf("The bookmark %s does not exist", bookmarkLocation)
 		}
