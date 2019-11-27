@@ -1,6 +1,7 @@
 package app
 
 import (
+	//	"fmt"
 	"os/exec"
 
 	"github.com/gdamore/tcell"
@@ -42,6 +43,9 @@ func (b *BookmarkApp) draw() {
 	main := b.createTable()
 
 	b.loadLinks(main)
+	if main.GetRowCount() > 0 {
+		main.Select(b.selectedIndex, 0)
+	}
 
 	grid.AddItem(main, 1, 0, 1, 3, 0, 0, false)
 
@@ -103,8 +107,19 @@ func (b *BookmarkApp) loadLinks(table *tview.Table) {
 	}
 
 	table.SetSelectionChangedFunc(func(row, column int) {
-		b.selectedIndex = row
 		b.selectedBookmark = items[row]
+		rowcount := table.GetRowCount() - 1
+		if rowcount == 0 {
+			b.selectedIndex = 0
+			return
+		}
+
+		if rowcount-row == 0 {
+			b.selectedIndex = row - 1
+		} else {
+			b.selectedIndex = row
+		}
+
 	})
 
 }
