@@ -1,7 +1,6 @@
 package app
 
 import (
-	//	"fmt"
 	"os/exec"
 
 	"github.com/gdamore/tcell"
