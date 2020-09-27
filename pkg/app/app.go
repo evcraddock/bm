@@ -144,10 +144,10 @@ func (b *BookmarkApp) addTask() {
 	if taskCommand != "" {
 		addCmd := strings.Split(taskCommand, " ")
 		for i, t := range addCmd {
-			if strings.Contains(t, "{taskName}") {
+			if strings.Contains(t, "{Title}") {
 				addCmd[i] = b.selectedBookmark.Title
 			}
-			if strings.Contains(t, "{description}") {
+			if strings.Contains(t, "{URL}") {
 				addCmd[i] = b.selectedBookmark.URL
 			}
 		}
