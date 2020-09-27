@@ -8,7 +8,7 @@ then
 fi
 rm -f "$temp"
 
-# update ~/.netsboat/config
+# update ~/.newsboat/config
 # make sure that bm is in your path
 # bookmark-cmd "~/path/to/newsboat-savebookmark.sh"
 # bookmark-autopilot yet
