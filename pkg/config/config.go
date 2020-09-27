@@ -34,6 +34,7 @@ func init() {
 // Config configuration data
 type Config struct {
 	BookmarkFolder string `yaml:"bookmarkFolder"`
+	AddTaskCommand string `yaml:"addTaskCommand"`
 }
 
 // FileExists returns a boolean for whether the config file exists
@@ -55,6 +56,7 @@ func LoadConfigFile() (*Config, error) {
 
 	return &Config{
 		BookmarkFolder: viper.GetString("config.bookmarkFolder"),
+		AddTaskCommand: viper.GetString("config.addTaskCommand"),
 	}, nil
 }
 

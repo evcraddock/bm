@@ -2,27 +2,31 @@ package app
 
 import (
 	"os/exec"
+	"strings"
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 
 	"github.com/evcraddock/bm/pkg/bookmarks"
+	"github.com/evcraddock/bm/pkg/config"
 )
 
 // BookmarkApp text ui for managing bookmarks
 type BookmarkApp struct {
 	app              *tview.Application
+	config           *config.Config
 	manager          *bookmarks.BookmarkManager
 	selectedIndex    int
 	selectedBookmark *bookmarks.Bookmark
 }
 
 // NewBookmarkApp creates a new bookmark app
-func NewBookmarkApp(manager *bookmarks.BookmarkManager) *BookmarkApp {
+func NewBookmarkApp(cfg *config.Config, manager *bookmarks.BookmarkManager) *BookmarkApp {
 	app := tview.NewApplication()
 
 	return &BookmarkApp{
 		app:           app,
+		config:        cfg,
 		manager:       manager,
 		selectedIndex: 0,
 	}
@@ -89,7 +93,7 @@ func (b *BookmarkApp) createHeader() *tview.TextView {
 
 func (b *BookmarkApp) createFooter() *tview.TextView {
 	footer := tview.NewTextView()
-	footer.SetText("ENTER:Open q:Quit R:Reload d:Delete")
+	footer.SetText("ENTER:Open q:Quit R:Reload t:Add Task d:Delete")
 
 	return footer
 }
@@ -135,6 +139,27 @@ func (b *BookmarkApp) deleteBookmark() {
 	b.manager.Remove(b.selectedBookmark.Title)
 }
 
+func (b *BookmarkApp) addTask() {
+	taskCommand := b.config.AddTaskCommand
+	if taskCommand != "" {
+		addCmd := strings.Split(taskCommand, " ")
+		for i, t := range addCmd {
+			if strings.Contains(t, "{taskName}") {
+				addCmd[i] = b.selectedBookmark.Title
+			}
+			if strings.Contains(t, "{description}") {
+				addCmd[i] = b.selectedBookmark.URL
+			}
+		}
+
+		cmd := exec.Command(addCmd[0], addCmd[1:]...)
+		err := cmd.Start()
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func (b *BookmarkApp) handleInput(event *tcell.EventKey) *tcell.EventKey {
 	key := event.Key()
 	if key == tcell.KeyRune {
@@ -146,6 +171,8 @@ func (b *BookmarkApp) handleInput(event *tcell.EventKey) *tcell.EventKey {
 		case 'd':
 			b.deleteBookmark()
 			b.draw()
+		case 't':
+			b.addTask()
 		}
 	}
 

@@ -92,6 +92,6 @@ func (o *BaseOptions) prepare(cmd *cobra.Command, args []string) {
 func (o *BaseOptions) startApp() {
 	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
 
-	bmApp := app.NewBookmarkApp(manager)
+	bmApp := app.NewBookmarkApp(o.Config, manager)
 	bmApp.Load()
 }
