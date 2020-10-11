@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+	"time"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"github.com/evcraddock/bm/pkg/config"
 	"github.com/evcraddock/bm/pkg/utils"
@@ -15,12 +17,25 @@ import (
 
 // Bookmark bookmark data
 type Bookmark struct {
-	Title    string   `yaml:"title"`
-	URL      string   `yaml:"url"`
-	Author   string   `yaml:"author,omitempty"`
-	Tags     []string `yaml:"tags,omitempty"`
-	location string
+	Title     string    `yaml:"title"`
+	URL       string    `yaml:"url"`
+	Author    string    `yaml:"author,omitempty"`
+	Tags      []string  `yaml:"tags,omitempty"`
+	DateAdded time.Time `yaml:"dateAdded,omitempty"`
+	location  string
 }
+
+type ByTitle []Bookmark
+
+func (a ByTitle) Len() int           { return len(a) }
+func (a ByTitle) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByTitle) Less(i, j int) bool { return a[i].Title < a[j].Title }
+
+type ByDateAdded []Bookmark
+
+func (b ByDateAdded) Len() int           { return len(b) }
+func (b ByDateAdded) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
+func (b ByDateAdded) Less(i, j int) bool { return b[i].DateAdded.Before(b[j].DateAdded) }
 
 // BookmarkManager manages a bookmark
 type BookmarkManager struct {
@@ -64,21 +79,23 @@ func (b *BookmarkManager) Load(bookmarkLocation string) (*Bookmark, error) {
 }
 
 // LoadBookmarks returns a list of bookmarks
-func (b *BookmarkManager) LoadBookmarks() ([]*Bookmark, error) {
+func (b *BookmarkManager) LoadBookmarks() ([]Bookmark, error) {
 	bookmarkLocation := fmt.Sprintf("%s/%s", b.bookmarkFolder, b.category)
-	var bookmarks []*Bookmark
+	var bookmarks []Bookmark
 
 	err := filepath.Walk(bookmarkLocation, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			bookmark, err := b.Load(path)
 			if err == nil {
-				bookmarks = append(bookmarks, bookmark)
+				bookmarks = append(bookmarks, *bookmark)
 			}
 
 		}
 
 		return nil
 	})
+
+	sort.Sort(ByDateAdded(bookmarks))
 
 	return bookmarks, err
 
@@ -107,8 +124,9 @@ func (b *BookmarkManager) Save(bookmark *Bookmark) error {
 // Create save a new bookmark
 func (b *BookmarkManager) Create(title, url string) error {
 	bookmark := &Bookmark{
-		Title: title,
-		URL:   url,
+		Title:     title,
+		URL:       url,
+		DateAdded: time.Now(),
 	}
 
 	if b.interactive {

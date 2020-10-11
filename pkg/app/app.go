@@ -86,7 +86,7 @@ func (b *BookmarkApp) createTable() *tview.Table {
 
 func (b *BookmarkApp) createHeader() *tview.TextView {
 	header := tview.NewTextView()
-	header.SetText("bookmark app ver:0.1")
+	header.SetText("bookmark app ver:0.2")
 
 	return header
 }
@@ -110,7 +110,7 @@ func (b *BookmarkApp) loadLinks(table *tview.Table) {
 	}
 
 	table.SetSelectionChangedFunc(func(row, column int) {
-		b.selectedBookmark = items[row]
+		b.selectedBookmark = &items[row]
 		rowcount := table.GetRowCount() - 1
 		if rowcount == 0 {
 			b.selectedIndex = 0
