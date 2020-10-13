@@ -10,6 +10,7 @@ import (
 
 	"github.com/evcraddock/bm/pkg/app"
 	"github.com/evcraddock/bm/pkg/bookmarks"
+	"github.com/evcraddock/bm/pkg/categories"
 	"github.com/evcraddock/bm/pkg/config"
 )
 
@@ -90,8 +91,9 @@ func (o *BaseOptions) prepare(cmd *cobra.Command, args []string) {
 }
 
 func (o *BaseOptions) startApp() {
-	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
+	bookmarkManager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
+	categoryManager := categories.NewCategoryManager(o.Config)
 
-	bmApp := app.NewBookmarkApp(o.Config, manager)
+	bmApp := app.NewBookmarkApp(o.Config, bookmarkManager, categoryManager, o.Category)
 	bmApp.Load()
 }

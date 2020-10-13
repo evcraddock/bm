@@ -53,6 +53,10 @@ func NewBookmarkManager(cfg *config.Config, interactive bool, category string) *
 	}
 }
 
+func (b *BookmarkManager) SetCategory(category string) {
+	b.category = category
+}
+
 // GetBookmarkLocation return the folder location where bookmarks are stored
 func (b *BookmarkManager) GetBookmarkLocation(title string) string {
 
