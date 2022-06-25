@@ -1,6 +1,7 @@
 package app
 
 import (
+	//	"fmt"
 	"os/exec"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 // BookmarkApp text ui for managing bookmarks
 type BookmarkApp struct {
 	app              *tview.Application
+	layoutGrid       *tview.Grid
 	config           *config.Config
 	bookmarkManager  *bookmarks.BookmarkManager
 	categoryManager  *categories.CategoryManager
@@ -39,13 +41,19 @@ func NewBookmarkApp(cfg *config.Config, bookmarkManager *bookmarks.BookmarkManag
 	}
 }
 
+//Sets category
 func (b *BookmarkApp) SetCategory(category string) {
-	b.selectedCategory = category
-	b.bookmarkManager.SetCategory(category)
+	//fmt.Printf(category)
+	if b.selectedCategory != category {
+		b.selectedCategory = category
+		b.bookmarkManager.SetCategory(category)
+	}
 }
 
 //Load loads a list of bookmarks
 func (b *BookmarkApp) Load() {
+	b.layoutGrid = b.createGrid()
+	b.app.SetRoot(b.layoutGrid, true)
 	b.selectedView = "bookmarks"
 	b.draw()
 	if err := b.app.Run(); err != nil {
@@ -54,29 +62,40 @@ func (b *BookmarkApp) Load() {
 }
 
 func (b *BookmarkApp) draw() {
-	grid := b.createGrid()
-	main := b.createTable()
 
 	b.app.SetInputCapture(b.handleInput)
-	b.loadLinks(main)
-	if main.GetRowCount() > 0 {
-		main.Select(b.selectedIndex, 0)
-	}
 
-	// catView := b.createCategoryList()
 	catView := b.loadCategories()
+	// main := b.loadLinks()
 
-	grid.AddItem(catView, 1, 0, 1, 1, 0, 0, false)
-	grid.AddItem(main, 1, 1, 1, 3, 0, 0, false)
+	// b.layoutGrid.RemoveItem(main)
+	b.layoutGrid.AddItem(catView, 1, 0, 1, 1, 0, 0, false)
+	//	b.layoutGrid.AddItem(main, 1, 1, 1, 3, 0, 0, false)
 
-	b.app.SetRoot(grid, true)
+	b.loadBookmarks(b.selectedView == "bookmarks")
 
 	switch b.selectedView {
 	case "categories":
 		b.app.SetFocus(catView)
+		catView.SetSelectable(true, false)
 	case "bookmarks":
-		b.app.SetFocus(main)
+		catView.SetSelectable(false, false)
+		//	b.app.SetFocus(main)
 	}
+}
+
+func (b *BookmarkApp) loadBookmarks(setFocus bool) {
+	bookmarkList := b.loadLinks()
+	b.layoutGrid.RemoveItem(bookmarkList)
+	b.layoutGrid.AddItem(bookmarkList, 1, 1, 1, 3, 0, 0, false)
+
+	bookmarkList.SetSelectable(false, false)
+	if setFocus {
+		bookmarkList.SetSelectable(true, false)
+		b.app.SetFocus(bookmarkList)
+	}
+
+	bookmarkList.InputHandler()
 }
 
 func (b *BookmarkApp) createGrid() *tview.Grid {
@@ -91,7 +110,7 @@ func (b *BookmarkApp) createGrid() *tview.Grid {
 
 }
 
-func (b *BookmarkApp) createTable() *tview.Table {
+func (b *BookmarkApp) loadLinks() *tview.Table {
 	table := tview.NewTable()
 	table.InsertColumn(1)
 	table.SetSelectable(true, false)
@@ -105,7 +124,35 @@ func (b *BookmarkApp) createTable() *tview.Table {
 			b.openLink(b.selectedBookmark)
 		})
 
+	items, err := b.bookmarkManager.LoadBookmarks()
+	if err != nil {
+		panic(err)
+	}
+
+	for i, bookmark := range items {
+		table.SetCell(i, 0, tview.NewTableCell(bookmark.Title).SetAlign(tview.AlignLeft))
+		table.SetCell(i, 1, tview.NewTableCell(bookmark.URL).SetAlign(tview.AlignLeft).SetMaxWidth(0))
+		table.SetCell(i, 2, tview.NewTableCell(b.selectedCategory).SetAlign(tview.AlignLeft))
+	}
+
+	table.SetSelectionChangedFunc(func(row, column int) {
+		b.selectedBookmark = &items[row]
+		rowcount := table.GetRowCount() - 1
+		if rowcount == 0 {
+			b.selectedIndex = 0
+			return
+		}
+
+		if rowcount-row == 0 {
+			b.selectedIndex = row - 1
+		} else {
+			b.selectedIndex = row
+		}
+
+	})
+
 	return table
+
 }
 
 func (b *BookmarkApp) createHeader() *tview.TextView {
@@ -132,12 +179,15 @@ func (b *BookmarkApp) loadCategories() *tview.Table {
 	table.InsertColumn(1)
 	table.SetSelectable(true, false)
 	table.Select(0, 0).
-		SetSelectedFunc(func(row int, column int) {
+		SetSelectionChangedFunc(func(row int, column int) {
 			b.SetCategory(categoryList[row].Name)
-			b.selectedView = "bookmarks"
+			// b.selectedView = "bookmarks"
 			b.selectedIndex = 0
-			b.draw()
+			b.loadBookmarks(true)
 		})
+	//	SetSelectionChangedFunc(func(row, column int) {
+	//		fmt.Printf("selected")
+	//	})
 
 	for i, category := range categoryList {
 		table.SetCell(i, 0, tview.NewTableCell(category.Name))
@@ -147,35 +197,6 @@ func (b *BookmarkApp) loadCategories() *tview.Table {
 	}
 
 	return table
-}
-
-func (b *BookmarkApp) loadLinks(table *tview.Table) {
-	items, err := b.bookmarkManager.LoadBookmarks()
-	if err != nil {
-		panic(err)
-	}
-
-	for i, bookmark := range items {
-		table.SetCell(i, 0, tview.NewTableCell(bookmark.Title).SetAlign(tview.AlignLeft))
-		table.SetCell(i, 1, tview.NewTableCell(bookmark.URL).SetAlign(tview.AlignLeft).SetMaxWidth(0))
-	}
-
-	table.SetSelectionChangedFunc(func(row, column int) {
-		b.selectedBookmark = &items[row]
-		rowcount := table.GetRowCount() - 1
-		if rowcount == 0 {
-			b.selectedIndex = 0
-			return
-		}
-
-		if rowcount-row == 0 {
-			b.selectedIndex = row - 1
-		} else {
-			b.selectedIndex = row
-		}
-
-	})
-
 }
 
 func (b *BookmarkApp) openLink(bookmark *bookmarks.Bookmark) {
@@ -230,9 +251,10 @@ func (b *BookmarkApp) handleInput(event *tcell.EventKey) *tcell.EventKey {
 				b.addTask()
 			}
 		case 'c':
-			b.selectedIndex = 0
 			b.selectedView = "categories"
 			b.draw()
+		case 'h':
+		case 'l':
 		}
 
 	}
