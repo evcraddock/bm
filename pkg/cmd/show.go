@@ -28,7 +28,7 @@ func NewCmdShow(out io.Writer) *cobra.Command {
 }
 
 func (o *BaseOptions) showBookmark() {
-	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
+	manager := bookmarks.NewBookmarkManager(false, o.Category)
 	bookmarkLocation := manager.GetBookmarkLocation(o.Title)
 	bookmark, err := manager.Load(bookmarkLocation)
 	if err != nil {

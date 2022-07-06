@@ -7,17 +7,16 @@ import (
 
 	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
+	"github.com/spf13/viper"
 
 	"github.com/evcraddock/bm/pkg/bookmarks"
 	"github.com/evcraddock/bm/pkg/categories"
-	"github.com/evcraddock/bm/pkg/config"
 )
 
 // BookmarkApp text ui for managing bookmarks
 type BookmarkApp struct {
 	app              *tview.Application
 	layoutGrid       *tview.Grid
-	config           *config.Config
 	bookmarkManager  *bookmarks.BookmarkManager
 	categoryManager  *categories.CategoryManager
 	selectedIndex    int
@@ -27,12 +26,11 @@ type BookmarkApp struct {
 }
 
 // NewBookmarkApp creates a new bookmark app
-func NewBookmarkApp(cfg *config.Config, bookmarkManager *bookmarks.BookmarkManager, categoryManager *categories.CategoryManager, category string) *BookmarkApp {
+func NewBookmarkApp(bookmarkManager *bookmarks.BookmarkManager, categoryManager *categories.CategoryManager, category string) *BookmarkApp {
 	app := tview.NewApplication()
 
 	return &BookmarkApp{
 		app:              app,
-		config:           cfg,
 		bookmarkManager:  bookmarkManager,
 		categoryManager:  categoryManager,
 		selectedIndex:    0,
@@ -212,7 +210,8 @@ func (b *BookmarkApp) deleteBookmark() {
 }
 
 func (b *BookmarkApp) addTask() {
-	taskCommand := b.config.AddTaskCommand
+	addTaskCommand := viper.GetString("AddTaskCommand")
+	taskCommand := addTaskCommand
 	if taskCommand != "" {
 		addCmd := strings.Split(taskCommand, " ")
 		for i, t := range addCmd {

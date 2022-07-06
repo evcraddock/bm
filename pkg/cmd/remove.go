@@ -27,7 +27,7 @@ func NewCmdRemove(out io.Writer) *cobra.Command {
 }
 
 func (o *BaseOptions) removeBookmark() {
-	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
+	manager := bookmarks.NewBookmarkManager(false, o.Category)
 	err := manager.Remove(o.Title)
 	if err != nil {
 		if os.IsNotExist(err) {

@@ -27,7 +27,7 @@ func NewCmdInsert(out io.Writer) *cobra.Command {
 }
 
 func (o *BaseOptions) addBookmark() {
-	manager := bookmarks.NewBookmarkManager(o.Config, o.Interactive, o.Category)
+	manager := bookmarks.NewBookmarkManager(o.Interactive, o.Category)
 	err := manager.Create(o.Title, o.URL)
 	if err != nil {
 		fmt.Fprintf(o.Out, "%s", err.Error())
