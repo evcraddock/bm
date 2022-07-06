@@ -3,7 +3,7 @@ package categories
 import (
 	"io/ioutil"
 
-	"github.com/evcraddock/bm/pkg/config"
+	"github.com/spf13/viper"
 )
 
 type Category struct {
@@ -15,9 +15,10 @@ type CategoryManager struct {
 	bookmarkFolder string
 }
 
-func NewCategoryManager(cfg *config.Config) *CategoryManager {
+func NewCategoryManager() *CategoryManager {
+	bookmarkFolder := viper.GetString("BookmarkFolder")
 	return &CategoryManager{
-		bookmarkFolder: cfg.BookmarkFolder,
+		bookmarkFolder: bookmarkFolder,
 	}
 }
 

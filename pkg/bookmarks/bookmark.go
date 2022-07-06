@@ -11,8 +11,8 @@ import (
 
 	"gopkg.in/yaml.v3"
 
-	"github.com/evcraddock/bm/pkg/config"
 	"github.com/evcraddock/bm/pkg/utils"
+	"github.com/spf13/viper"
 )
 
 // Bookmark bookmark data
@@ -42,14 +42,18 @@ type BookmarkManager struct {
 	bookmarkFolder string
 	interactive    bool
 	category       string
+	location       string
 }
 
 // NewBookmarkManager creates new BookmarkManager
-func NewBookmarkManager(cfg *config.Config, interactive bool, category string) *BookmarkManager {
+func NewBookmarkManager(interactive bool, category string) *BookmarkManager {
+	bookmarkFolder := viper.GetString("BookmarkFolder")
+
 	return &BookmarkManager{
-		bookmarkFolder: cfg.BookmarkFolder,
+		bookmarkFolder: bookmarkFolder,
 		interactive:    interactive,
 		category:       category,
+		location:       fmt.Sprintf("%s/%s", bookmarkFolder, category),
 	}
 }
 
@@ -69,7 +73,7 @@ func (b *BookmarkManager) Load(bookmarkLocation string) (*Bookmark, error) {
 	bookmarkfile, err := ioutil.ReadFile(bookmarkLocation + "/index.bm")
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, fmt.Errorf("The bookmark %s does not exist", bookmarkLocation)
+			return nil, fmt.Errorf("bookmark %s does not exist", bookmarkLocation)
 		}
 
 		return nil, err
@@ -88,19 +92,22 @@ func (b *BookmarkManager) LoadBookmarks() ([]Bookmark, error) {
 	var bookmarks []Bookmark
 
 	err := filepath.Walk(bookmarkLocation, func(path string, info os.FileInfo, err error) error {
+
+		if err != nil {
+			return nil
+		}
+
 		if info.IsDir() {
 			bookmark, err := b.Load(path)
 			if err == nil {
 				bookmarks = append(bookmarks, *bookmark)
 			}
-
 		}
 
 		return nil
 	})
 
 	sort.Sort(ByDateAdded(bookmarks))
-
 	return bookmarks, err
 
 }

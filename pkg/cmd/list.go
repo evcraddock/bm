@@ -27,8 +27,13 @@ func NewCmdList(out io.Writer) *cobra.Command {
 	return cmd
 }
 
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "list",
+}
+
 func (o *BaseOptions) listBookmarks() {
-	manager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
+	manager := bookmarks.NewBookmarkManager(false, o.Category)
 
 	bookmarks, err := manager.LoadBookmarks()
 	if err != nil {

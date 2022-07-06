@@ -26,7 +26,7 @@ func NewCmdUpdate(out io.Writer) *cobra.Command {
 }
 
 func (o *BaseOptions) updateBookmark() {
-	manager := bookmarks.NewBookmarkManager(o.Config, true, o.Category)
+	manager := bookmarks.NewBookmarkManager(true, o.Category)
 	err := manager.Update(o.Title)
 	if err != nil {
 		fmt.Fprintf(o.Out, "%s\n", err.Error())

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 	"github.com/evcraddock/bm/pkg/app"
 	"github.com/evcraddock/bm/pkg/bookmarks"
 	"github.com/evcraddock/bm/pkg/categories"
-	"github.com/evcraddock/bm/pkg/config"
 )
 
 // NewDefaultCommand creates a new cobra.Command
@@ -46,7 +44,6 @@ func NewBookmarkCommand(in io.Reader, out, err io.Writer) *cobra.Command {
 // BaseOptions default options for a command
 type BaseOptions struct {
 	Out         io.Writer
-	Config      *config.Config
 	Category    string
 	Interactive bool
 	Title       string
@@ -73,14 +70,6 @@ func (o *BaseOptions) prepare(cmd *cobra.Command, args []string) {
 		o.Category = category
 	}
 
-	cfg, err := config.LoadConfigFile()
-	if err != nil {
-		fmt.Fprintf(o.Out, "%s", err.Error())
-		os.Exit(1)
-	}
-
-	o.Config = cfg
-
 	if len(args) > 0 {
 		o.Title = args[0]
 	}
@@ -91,9 +80,9 @@ func (o *BaseOptions) prepare(cmd *cobra.Command, args []string) {
 }
 
 func (o *BaseOptions) startApp() {
-	bookmarkManager := bookmarks.NewBookmarkManager(o.Config, false, o.Category)
-	categoryManager := categories.NewCategoryManager(o.Config)
+	bookmarkManager := bookmarks.NewBookmarkManager(false, o.Category)
+	categoryManager := categories.NewCategoryManager()
 
-	bmApp := app.NewBookmarkApp(o.Config, bookmarkManager, categoryManager, o.Category)
+	bmApp := app.NewBookmarkApp(bookmarkManager, categoryManager, o.Category)
 	bmApp.Load()
 }
