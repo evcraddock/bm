@@ -113,27 +113,26 @@ func (b *BookmarkManager) LoadBookmarks() ([]Bookmark, error) {
 }
 
 // Save saves a bookmark
-func (b *BookmarkManager) Save(bookmark *Bookmark) error {
+func (b *BookmarkManager) Save(bookmark *Bookmark) (bool, error) {
 	data, err := yaml.Marshal(bookmark)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	err = ioutil.WriteFile(bookmark.location+"/index.bm", data, 0644)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	if err := b.savePreview(bookmark.URL, bookmark.location); err != nil {
-		return err
+		return true, err
 	}
 
-	fmt.Printf("Saved Bookmark %s\n", bookmark.Title)
-	return nil
+	return true, nil
 }
 
 // Create save a new bookmark
-func (b *BookmarkManager) Create(title, url string) error {
+func (b *BookmarkManager) Create(title, url string) (bool, error) {
 	bookmark := &Bookmark{
 		Title:     title,
 		URL:       url,
@@ -146,24 +145,20 @@ func (b *BookmarkManager) Create(title, url string) error {
 
 	if ok, location := b.createFolder(bookmark.Title); ok {
 		bookmark.location = location
-		if err := b.Save(bookmark); err != nil {
-			return err
-		}
-
-		return nil
+		return b.Save(bookmark)
 	}
 
-	return fmt.Errorf("bookmark %s already exists", title)
+	return false, fmt.Errorf("bookmark %s already exists", title)
 }
 
 // Update updates and existing bookmark
-func (b *BookmarkManager) Update(title string) error {
+func (b *BookmarkManager) Update(title string) (bool, error) {
 	folderTitle := utils.ScrubFolder(title)
 	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
 
 	bookmark, err := b.Load(bookmarkLocation)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	newbookmark := b.Edit(bookmark)
@@ -171,15 +166,11 @@ func (b *BookmarkManager) Update(title string) error {
 		if ok, location := b.moveFolder(bookmark.location, newbookmark.Title); ok {
 			newbookmark.location = location
 		} else {
-			return fmt.Errorf("Error moving folder %s", bookmark.location)
+			return false, fmt.Errorf("Error moving folder %s", bookmark.location)
 		}
 	}
 
-	if err := b.Save(newbookmark); err != nil {
-		return err
-	}
-
-	return nil
+	return b.Save(newbookmark)
 }
 
 // Edit prompts for changes to a bookmark

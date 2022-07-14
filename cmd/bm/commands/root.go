@@ -20,8 +20,20 @@ var listCmd = &cobra.Command{
 	Short: "list",
 }
 
+var createCmd = &cobra.Command{
+	Use:   "create",
+	Short: "create",
+}
+
+var deleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "delete",
+}
+
 func init() {
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(deleteCmd)
 }
 
 func Execute() {
