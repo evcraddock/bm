@@ -30,7 +30,7 @@ func New(category string) App {
 		bookmark:         bookmarkModel,
 		category:         categoryModel,
 		selectedCategory: category,
-		state:            categoryView,
+		state:            bookmarkView,
 	}
 }
 
