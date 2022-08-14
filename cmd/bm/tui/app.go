@@ -24,7 +24,7 @@ type App struct {
 
 func New(category string) App {
 	bookmarkModel := bookmarktui.New(category, nil)
-	categoryModel := categorytui.New(category)
+	categoryModel := categorytui.New(category, nil)
 
 	return App{
 		bookmark:         bookmarkModel,

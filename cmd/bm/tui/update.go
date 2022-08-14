@@ -16,6 +16,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		a.windowSize = msg
 	case tuicommands.CategoryViewMsg:
+		a.category = categorytui.New(a.selectedCategory, &a.windowSize)
 		a.state = categoryView
 	case tuicommands.SelectCategoryMsg:
 		a.selectedCategory = msg.SelectedCategory
