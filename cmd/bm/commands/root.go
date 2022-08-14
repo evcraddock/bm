@@ -1,9 +1,13 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+
+	"github.com/evcraddock/bm/cmd/bm/tui"
 )
 
 var (
@@ -13,6 +17,15 @@ var (
 var rootCmd = &cobra.Command{
 	Use:   "bm",
 	Short: "bm",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			p := tea.NewProgram(tui.New(category))
+			if err := p.Start(); err != nil {
+				fmt.Println("unable to start app")
+				os.Exit(1)
+			}
+		}
+	},
 }
 
 var listCmd = &cobra.Command{
@@ -30,10 +43,18 @@ var deleteCmd = &cobra.Command{
 	Short: "delete",
 }
 
+var updateCmd = &cobra.Command{
+	Use:   "update",
+	Short: "update",
+}
+
 func init() {
+	rootCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
+
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(deleteCmd)
+	rootCmd.AddCommand(updateCmd)
 }
 
 func Execute() {

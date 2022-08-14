@@ -1,0 +1,36 @@
+package commands
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/evcraddock/bm/pkg/bookmarks"
+	"github.com/spf13/cobra"
+)
+
+var updateBookmarkCmd = &cobra.Command{
+	Use:   "bookmark",
+	Short: "update bookmark",
+	Run:   cmdUpdateBookmark,
+}
+
+func init() {
+	updateCmd.AddCommand(updateBookmarkCmd)
+
+	updateBookmarkCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
+}
+
+func cmdUpdateBookmark(cmd *cobra.Command, args []string) {
+	var title string
+
+	if len(args) > 0 {
+		title = args[0]
+	}
+
+	manager := bookmarks.NewBookmarkManager(true, category)
+	_, err := manager.Update(title)
+	if err != nil {
+		fmt.Println("unable to update bookmark")
+		os.Exit(1)
+	}
+}

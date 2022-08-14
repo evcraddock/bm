@@ -1,0 +1,109 @@
+# github.com/PuerkitoBio/goquery v1.5.0
+## explicit
+github.com/PuerkitoBio/goquery
+# github.com/andybalholm/cascadia v1.0.0
+github.com/andybalholm/cascadia
+# github.com/atotto/clipboard v0.1.4
+github.com/atotto/clipboard
+# github.com/charmbracelet/bubbles v0.13.0
+## explicit
+github.com/charmbracelet/bubbles/help
+github.com/charmbracelet/bubbles/key
+github.com/charmbracelet/bubbles/list
+github.com/charmbracelet/bubbles/paginator
+github.com/charmbracelet/bubbles/spinner
+github.com/charmbracelet/bubbles/textinput
+# github.com/charmbracelet/bubbletea v0.22.0
+## explicit
+github.com/charmbracelet/bubbletea
+# github.com/charmbracelet/lipgloss v0.5.0
+## explicit
+github.com/charmbracelet/lipgloss
+# github.com/containerd/console v1.0.3
+github.com/containerd/console
+# github.com/fsnotify/fsnotify v1.4.7
+github.com/fsnotify/fsnotify
+# github.com/hashicorp/hcl v1.0.0
+github.com/hashicorp/hcl
+github.com/hashicorp/hcl/hcl/ast
+github.com/hashicorp/hcl/hcl/parser
+github.com/hashicorp/hcl/hcl/printer
+github.com/hashicorp/hcl/hcl/scanner
+github.com/hashicorp/hcl/hcl/strconv
+github.com/hashicorp/hcl/hcl/token
+github.com/hashicorp/hcl/json/parser
+github.com/hashicorp/hcl/json/scanner
+github.com/hashicorp/hcl/json/token
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/lucasb-eyer/go-colorful v1.2.0
+github.com/lucasb-eyer/go-colorful
+# github.com/magiconair/properties v1.8.0
+github.com/magiconair/properties
+# github.com/mattn/go-isatty v0.0.14
+github.com/mattn/go-isatty
+# github.com/mattn/go-runewidth v0.0.13
+github.com/mattn/go-runewidth
+# github.com/mitchellh/mapstructure v1.1.2
+github.com/mitchellh/mapstructure
+# github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b
+github.com/muesli/ansi
+github.com/muesli/ansi/compressor
+# github.com/muesli/cancelreader v0.2.1
+github.com/muesli/cancelreader
+# github.com/muesli/reflow v0.3.0
+github.com/muesli/reflow/ansi
+github.com/muesli/reflow/truncate
+github.com/muesli/reflow/wordwrap
+github.com/muesli/reflow/wrap
+# github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739
+github.com/muesli/termenv
+# github.com/pelletier/go-toml v1.2.0
+github.com/pelletier/go-toml
+# github.com/philipjkim/fastimage v0.0.0-20180529065536-806cdf4a57ca
+## explicit
+github.com/philipjkim/fastimage
+# github.com/philipjkim/goreadability v0.0.0-20190422094628-0f3b4a11b312
+## explicit
+github.com/philipjkim/goreadability
+# github.com/rivo/uniseg v0.2.0
+github.com/rivo/uniseg
+# github.com/sahilm/fuzzy v0.1.0
+github.com/sahilm/fuzzy
+# github.com/spf13/afero v1.1.2
+github.com/spf13/afero
+github.com/spf13/afero/mem
+# github.com/spf13/cast v1.3.0
+github.com/spf13/cast
+# github.com/spf13/cobra v0.0.5
+## explicit
+github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v1.0.0
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v1.0.3
+github.com/spf13/pflag
+# github.com/spf13/viper v1.3.2
+## explicit
+github.com/spf13/viper
+# github.com/stretchr/testify v1.4.0
+## explicit
+# golang.org/x/net v0.0.0-20191112182307-2180aed22343
+## explicit
+golang.org/x/net/html
+golang.org/x/net/html/atom
+# golang.org/x/sys v0.0.0-20220209214540-3681064d5158
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/plan9
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
+golang.org/x/term
+# golang.org/x/text v0.3.2
+## explicit
+golang.org/x/text/transform
+golang.org/x/text/unicode/norm
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+## explicit
+gopkg.in/yaml.v3

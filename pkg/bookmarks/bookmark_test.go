@@ -57,29 +57,6 @@ func TestGetBookmarkLocation(t *testing.T) {
 	}
 }
 
-func TestLoad(t *testing.T) {
-	usr, err := user.Current()
-	if err != nil {
-		t.Fail()
-	}
-
-	homeDirectory := usr.HomeDir
-	viper.Set("bookmarkFolder", fmt.Sprintf("%s/.local/bookmarks", homeDirectory))
-	location := fmt.Sprintf("%s/.local/bookmarks/readlater/cnn", homeDirectory)
-	manager := NewBookmarkManager(false, "readlater")
-
-	bm, err := manager.Load(location)
-	if err != nil {
-		t.Logf("error loading: %v", err)
-		t.Fail()
-	}
-
-	if bm == nil {
-		t.Log("bookmark is nil")
-		t.Fail()
-	}
-}
-
 func TestLoadFailed(t *testing.T) {
 	viper.Set("bookmarkFolder", "no-exists")
 	location := "bad-location"
