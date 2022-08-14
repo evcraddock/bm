@@ -10,10 +10,8 @@ import (
 
 var (
 	configFileFolder = ".config/bm/"
-	// TODO: added for dev
-	//	configName       = "config"
-	configName = "config-dev"
-	envPrefix  = "BM"
+	configName       = "config"
+	envPrefix        = "BM"
 
 	homeDirectory  string
 	configFilePath string
