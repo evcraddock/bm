@@ -10,7 +10,7 @@ import (
 
 var (
 	configFileFolder = ".config/bm/"
-	configName       = "config-dev"
+	configName       = "config"
 	envPrefix        = "BM"
 
 	homeDirectory  string
