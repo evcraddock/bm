@@ -10,7 +10,21 @@ import (
 	"github.com/evcraddock/bm/pkg/categories"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
+var (
+	docStyle = lipgloss.NewStyle().Margin(1, 1)
+
+	subtle    = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
+	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
+
+	title = lipgloss.NewStyle().
+		MarginLeft(1).
+		MarginRight(5).
+		// Bold(true).
+		// Background(lipgloss.Color("62")).
+		Padding(0, 1).
+		Foreground(lipgloss.Color("230")).
+		SetString("Categories")
+)
 
 type Model struct {
 	categories []categories.Category
@@ -71,17 +85,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := "CATEGORIES\n\n"
+	var s string
 	for i, category := range m.categories {
-		cursor := " "
+		cursor := "  "
+		name := lipgloss.NewStyle().
+			Foreground(lipgloss.AdaptiveColor{Light: "#A49FA5", Dark: "#777777"}).
+			SetString(category.Name).
+			String()
+
 		if m.cursor == i {
-			cursor = ">"
+			cursor = lipgloss.NewStyle().Foreground(highlight).SetString("->").String()
+			name = lipgloss.NewStyle().
+				// Foreground(lipgloss.Color("#FFF7DB")).
+				// Bold(true).
+				Foreground(lipgloss.AdaptiveColor{Light: "#EE6FF8", Dark: "#EE6FF8"}).
+				SetString(category.Name).
+				String()
 		}
 
-		s += fmt.Sprintf("%s %s \n", cursor, category.Name)
+		s += lipgloss.NewStyle().Render(fmt.Sprintf("%s %s \n", cursor, name))
 	}
 
-	return s
+	return docStyle.Render(fmt.Sprintf("%s\n\n%s", title, s))
 }
 
 func (m Model) getSelectedCategoryIndex() int {
