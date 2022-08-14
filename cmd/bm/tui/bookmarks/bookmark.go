@@ -11,9 +11,10 @@ import (
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
-var defaultWidth = 284
-var defaultHeight = 38
+var (
+	docStyle     = lipgloss.NewStyle().Margin(1, 1)
+	offsetHeight = 2
+)
 
 type errMsg struct{ err error }
 
@@ -36,18 +37,17 @@ func (i item) FilterValue() string { return i.name }
 
 func New(category string, windowSize *tea.WindowSizeMsg) Model {
 	bookmarkModel := Model{
-		manager:  bookmarks.NewBookmarkManager(false, category),
-		category: category,
+		manager:    bookmarks.NewBookmarkManager(false, category),
+		category:   category,
+		windowSize: windowSize,
 	}
 
 	m := bookmarkModel.loadBookmarksList(category)
 	m.Title = category
 
-	h, v := docStyle.GetFrameSize()
 	if windowSize != nil {
-		m.SetSize(windowSize.Width-h, windowSize.Height-v)
-	} else {
-		m.SetSize(defaultWidth-h, defaultHeight-v)
+		width, height := bookmarkModel.getWindowSize()
+		m.SetSize(width, height)
 	}
 
 	bookmarkModel.list = m
@@ -66,7 +66,7 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 
-		case "esc", "h":
+		case "esc", "H", "tab":
 			return b, func() tea.Msg {
 				return tuicommands.CategoryViewMsg(true)
 			}
@@ -94,8 +94,8 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		b.list.SetSize(msg.Width-h, msg.Height-v)
+		b.windowSize = &msg
+		b.list.SetSize(b.getWindowSize())
 	}
 
 	cmds = append(cmds, cmd)
@@ -104,6 +104,11 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (b Model) View() string {
 	return docStyle.Render(b.list.View())
+}
+
+func (b Model) getWindowSize() (int, int) {
+	_, v := docStyle.GetFrameSize()
+	return b.windowSize.Width, b.windowSize.Height - v - offsetHeight
 }
 
 func (b Model) deleteBookmark() tea.Msg {
