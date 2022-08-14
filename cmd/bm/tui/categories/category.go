@@ -71,7 +71,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	s := "Please Select a Category\n\n"
+	s := "CATEGORIES\n\n"
 	for i, category := range m.categories {
 		cursor := " "
 		if m.cursor == i {
