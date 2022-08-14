@@ -1,7 +1,7 @@
 #! /bin/bash
 
 temp=`mktemp add-bookmark.XXX.log`
-bm insert "$2" "$1" >"$temp" 2>&1
+bm create bookmark "$2" "$1" >"$temp" 2>&1
 if [ $? -ne 0 ]
 then
     cat "$temp"
