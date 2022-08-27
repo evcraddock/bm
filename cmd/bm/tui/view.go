@@ -1,6 +1,8 @@
 package tui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	boxStyle         = lipgloss.NewStyle().MarginTop(1)
@@ -16,18 +18,28 @@ func (a App) loadSinglePane() string {
 		return a.category.View()
 	}
 
-	return a.bookmark.View()
+	return a.bookmarks.View()
 }
 
 func (a App) loadMultiPane() string {
 	leftBoxStyle := lipgloss.NewStyle().MarginTop(1).MarginLeft(1)
 	rightBoxStyle := lipgloss.NewStyle().MarginTop(1).MarginLeft(-1)
+	// selectView := a.bookmarks.View()
+	var selectView string
 
 	switch a.state {
 	case categoryView:
 		leftBoxStyle = selectedBoxStyle
+		if selectView == "" {
+			selectView = a.bookmarks.View()
+		}
 
 	case bookmarkView:
+		selectView = a.bookmark.View()
+		rightBoxStyle = selectedBoxStyle
+
+	case bookmarksView:
+		selectView = a.bookmarks.View()
 		rightBoxStyle = selectedBoxStyle
 	}
 
@@ -36,6 +48,6 @@ func (a App) loadMultiPane() string {
 		lipgloss.JoinHorizontal(
 			lipgloss.Top,
 			leftBoxStyle.Render(a.category.View()),
-			rightBoxStyle.Render(a.bookmark.View())),
+			rightBoxStyle.Render(selectView)),
 	)
 }

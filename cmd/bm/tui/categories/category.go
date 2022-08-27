@@ -75,22 +75,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.cursor > 0 {
 				m.cursor--
 			}
+			cmd = m.setSelected(false)
 
 		case "down", "j":
 			if m.cursor < len(m.categories)-1 {
 				m.cursor++
 			}
+			cmd = m.setSelected(false)
 
 		case "g":
 			m.cursor = 0
+			cmd = m.setSelected(false)
 
 		case "G":
 			if len(m.categories) > 0 {
 				m.cursor = len(m.categories) - 1
 			}
+			cmd = m.setSelected(false)
 
-		case "enter", " ", "o", "l":
-			cmd = m.setSelected()
+		case "enter", " ", "o", "l", "tab":
+			cmd = m.setSelected(true)
 		}
 	}
 
@@ -131,7 +135,7 @@ func (m Model) getSelectedCategoryIndex() int {
 	return 0
 }
 
-func (m Model) setSelected() tea.Cmd {
+func (m Model) setSelected(switchView bool) tea.Cmd {
 	_, ok := m.selected[m.cursor]
 	if ok {
 		delete(m.selected, m.cursor)
@@ -139,7 +143,7 @@ func (m Model) setSelected() tea.Cmd {
 		category := m.categories[m.cursor]
 		m.selected[m.cursor] = category
 
-		return tuicommands.SelectCategory(category.Name)
+		return tuicommands.SelectCategory(category.Name, switchView)
 	}
 
 	return nil

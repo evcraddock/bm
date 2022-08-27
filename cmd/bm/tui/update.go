@@ -3,7 +3,8 @@ package tui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 
-	bookmarktui "github.com/evcraddock/bm/cmd/bm/tui/bookmarks"
+	bookmarktui "github.com/evcraddock/bm/cmd/bm/tui/bookmark"
+	bookmarkstui "github.com/evcraddock/bm/cmd/bm/tui/bookmarks"
 	categorytui "github.com/evcraddock/bm/cmd/bm/tui/categories"
 	tuicommands "github.com/evcraddock/bm/cmd/bm/tui/commands"
 )
@@ -15,15 +16,29 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		a.windowSize = msg
+
 	case tuicommands.CategoryViewMsg:
 		a.category = categorytui.New(a.selectedCategory, &a.windowSize)
 		a.state = categoryView
+
+	case tuicommands.SelectBookmarkMsg:
+		bookmark := msg.SelectedBookmark
+		a.bookmark = bookmarktui.New(bookmark, &a.windowSize)
+		a.state = bookmarkView
+
 	case tuicommands.SelectCategoryMsg:
 		a.selectedCategory = msg.SelectedCategory
-		a.bookmark = bookmarktui.New(a.selectedCategory, &a.windowSize)
-		a.state = bookmarkView
+		a.bookmarks = bookmarkstui.New(msg.SelectedCategory, &a.windowSize)
+		if msg.SwitchView {
+			a.state = bookmarksView
+		}
+
+	case tuicommands.BookmarkViewMsg:
+		a.state = bookmarksView
+
 	case tuicommands.ReloadBookmarksMsg:
-		a.bookmark = bookmarktui.New(a.selectedCategory, &a.windowSize)
+		a.bookmarks = bookmarkstui.New(a.selectedCategory, &a.windowSize)
+
 	}
 
 	switch a.state {
@@ -41,10 +56,20 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		bookmark, bcmd := a.bookmark.Update(msg)
 		bookmarkModel, ok := bookmark.(bookmarktui.Model)
 		if !ok {
-			panic("unable to load bookmarks")
+			panic("unable to load bookmark")
 		}
 
 		a.bookmark = bookmarkModel
+		cmd = bcmd
+
+	case bookmarksView:
+		bookmarks, bcmd := a.bookmarks.Update(msg)
+		bookmarkModel, ok := bookmarks.(bookmarkstui.Model)
+		if !ok {
+			panic("unable to load bookmarks")
+		}
+
+		a.bookmarks = bookmarkModel
 		cmd = bcmd
 	}
 

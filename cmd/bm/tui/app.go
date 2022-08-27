@@ -3,7 +3,8 @@ package tui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 
-	bookmarktui "github.com/evcraddock/bm/cmd/bm/tui/bookmarks"
+	bookmarktui "github.com/evcraddock/bm/cmd/bm/tui/bookmark"
+	bookmarkstui "github.com/evcraddock/bm/cmd/bm/tui/bookmarks"
 	categorytui "github.com/evcraddock/bm/cmd/bm/tui/categories"
 )
 
@@ -12,10 +13,12 @@ type sessionState int
 const (
 	categoryView sessionState = iota
 	bookmarkView
+	bookmarksView
 )
 
 type App struct {
 	bookmark         bookmarktui.Model
+	bookmarks        bookmarkstui.Model
 	category         categorytui.Model
 	selectedCategory string
 	state            sessionState
@@ -23,14 +26,16 @@ type App struct {
 }
 
 func New(category string) App {
-	bookmarkModel := bookmarktui.New(category, nil)
+	bookmarkModel := bookmarktui.New(nil, nil)
+	bookmarksModel := bookmarkstui.New(category, nil)
 	categoryModel := categorytui.New(category, nil)
 
 	return App{
 		bookmark:         bookmarkModel,
+		bookmarks:        bookmarksModel,
 		category:         categoryModel,
 		selectedCategory: category,
-		state:            bookmarkView,
+		state:            bookmarksView,
 	}
 }
 
