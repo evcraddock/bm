@@ -1,4 +1,4 @@
-package bookmarktui
+package bookmarkstui
 
 import (
 	"os/exec"
@@ -66,27 +66,40 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 
-		case "esc", "H", "tab":
+		case "esc", "shift+tab":
 			return b, func() tea.Msg {
 				return tuicommands.CategoryViewMsg(true)
 			}
 
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return b, tea.Quit
 
-		case "o":
+		case "ctrl+o", "enter":
 			b.openSelectedUrl()
 
-		case "r":
+		case "ctrl+r":
 			return b, func() tea.Msg {
 				return tuicommands.ReloadBookmarksMsg(true)
 			}
 
-		case "d":
+		case "ctrl+d":
 			b.deleteBookmark()
 			return b, func() tea.Msg {
 				return tuicommands.ReloadBookmarksMsg(true)
 			}
+
+		case "ctrl+e":
+			selectedItem := b.list.SelectedItem().(item)
+			bookmark, _ := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
+			// if err != nil {
+			// 	return errMsg{err}
+			// }
+
+			return b, tuicommands.SelectBookmark(bookmark)
+
+			// return b, func() tea.Msg {
+			// 	return b.getSelectedBookmark()
+			// }
 
 		default:
 			b.list, cmd = b.list.Update(msg)
@@ -109,6 +122,16 @@ func (b Model) View() string {
 func (b Model) getWindowSize() (int, int) {
 	_, v := docStyle.GetFrameSize()
 	return b.windowSize.Width, b.windowSize.Height - v - offsetHeight
+}
+
+func (b Model) getSelectedBookmark() tea.Msg {
+	selectedItem := b.list.SelectedItem().(item)
+	bookmark, err := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
+	if err != nil {
+		return errMsg{err}
+	}
+
+	return tuicommands.SelectBookmark(bookmark)
 }
 
 func (b Model) deleteBookmark() tea.Msg {
