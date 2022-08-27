@@ -88,18 +88,10 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return tuicommands.ReloadBookmarksMsg(true)
 			}
 
-		case "ctrl+e":
-			selectedItem := b.list.SelectedItem().(item)
-			bookmark, _ := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
-			// if err != nil {
-			// 	return errMsg{err}
-			// }
-
-			return b, tuicommands.SelectBookmark(bookmark)
-
-			// return b, func() tea.Msg {
-			// 	return b.getSelectedBookmark()
-			// }
+		// case "ctrl+e":
+		// 	selectedItem := b.list.SelectedItem().(item)
+		// 	bookmark, _ := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
+		// 	return b, tuicommands.SelectBookmark(bookmark)
 
 		default:
 			b.list, cmd = b.list.Update(msg)
