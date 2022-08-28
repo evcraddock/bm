@@ -205,6 +205,12 @@ func (b *BookmarkManager) Edit(bookmark *Bookmark) *Bookmark {
 
 // Remove removes a bookmark
 func (b *BookmarkManager) Remove(title string) error {
+	if title == "" {
+		// nothing to remove
+		// already have desired result; return nil
+		return nil
+	}
+
 	folderTitle := utils.ScrubFolder(title)
 	bookmarklocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
 

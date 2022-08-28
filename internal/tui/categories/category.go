@@ -92,6 +92,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter", " ", "o", "l", "tab":
 			cmd = m.setSelected(true)
+
+		case "ctrl+n":
+			cmd = m.createBookmark()
 		}
 	}
 
@@ -134,4 +137,10 @@ func (m Model) Index(category string) int {
 func (m Model) setSelected(switchView bool) tea.Cmd {
 	m.selected = m.categories[m.index]
 	return tuicommands.SelectCategory(m.selected.Name, switchView)
+}
+
+func (m Model) createBookmark() tea.Cmd {
+	return func() tea.Msg {
+		return tuicommands.CreateBookmarkMsg(true)
+	}
 }

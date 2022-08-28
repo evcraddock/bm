@@ -101,6 +101,11 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return b, tuicommands.SelectBookmark(bookmark)
 
+		case "ctrl+n":
+			return b, func() tea.Msg {
+				return tuicommands.CreateBookmarkMsg(true)
+			}
+
 		default:
 			b.list, cmd = b.list.Update(msg)
 
