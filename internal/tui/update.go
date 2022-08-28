@@ -43,6 +43,10 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.bookmarks = bookmarkstui.New(a.selectedCategory, &a.windowSize)
 		a.state = bookmarksView
 
+	case tuicommands.CreateBookmarkMsg:
+		a.bookmark = bookmarktui.New(nil, a.selectedCategory, &a.windowSize)
+		a.state = bookmarkView
+
 	}
 
 	switch a.state {

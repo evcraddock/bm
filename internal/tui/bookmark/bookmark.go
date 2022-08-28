@@ -34,6 +34,7 @@ var (
 type Model struct {
 	bookmark   *bookmarks.Bookmark
 	manager    *bookmarks.BookmarkManager
+	category   string
 	windowSize *tea.WindowSizeMsg
 	focusIndex int
 	inputs     []textinput.Model
@@ -44,8 +45,9 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 	m := Model{
 		bookmark:   bookmark,
 		manager:    bookmarks.NewBookmarkManager(false, category),
+		category:   category,
 		windowSize: windowSize,
-		inputs:     make([]textinput.Model, 3),
+		inputs:     make([]textinput.Model, 4),
 	}
 
 	if bookmark == nil {
@@ -71,6 +73,9 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 		case 2:
 			t.Placeholder = "Author"
 			t.SetValue(m.bookmark.Author)
+		case 3:
+			t.Placeholder = "Category"
+			t.SetValue(category)
 		}
 
 		m.inputs[i] = t
@@ -86,13 +91,20 @@ func (m Model) Init() tea.Cmd {
 func (m Model) updateBookmark() tea.Msg {
 	updated := m.bookmark
 
-	if err := m.manager.Remove(m.bookmark.Title); err != nil {
-		return errMsg{err}
+	if m.bookmark != nil && m.bookmark.Title != "" {
+		if err := m.manager.Remove(m.bookmark.Title); err != nil {
+			return errMsg{err}
+		}
 	}
 
 	updated.Title = m.inputs[0].Value()
 	updated.URL = m.inputs[1].Value()
 	updated.Author = m.inputs[2].Value()
+	updatedCategory := m.inputs[3].Value()
+
+	if m.category != updatedCategory {
+		m.manager = bookmarks.NewBookmarkManager(false, updatedCategory)
+	}
 
 	if ok, err := m.manager.Upsert(updated); err != nil {
 		return errMsg{err}
