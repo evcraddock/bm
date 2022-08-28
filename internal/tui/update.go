@@ -3,10 +3,10 @@ package tui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 
-	bookmarktui "github.com/evcraddock/bm/cmd/bm/tui/bookmark"
-	bookmarkstui "github.com/evcraddock/bm/cmd/bm/tui/bookmarks"
-	categorytui "github.com/evcraddock/bm/cmd/bm/tui/categories"
-	tuicommands "github.com/evcraddock/bm/cmd/bm/tui/commands"
+	bookmarktui "github.com/evcraddock/bm/internal/tui/bookmark"
+	bookmarkstui "github.com/evcraddock/bm/internal/tui/bookmarks"
+	categorytui "github.com/evcraddock/bm/internal/tui/categories"
+	tuicommands "github.com/evcraddock/bm/internal/tui/commands"
 )
 
 func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -23,7 +23,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tuicommands.SelectBookmarkMsg:
 		bookmark := msg.SelectedBookmark
-		a.bookmark = bookmarktui.New(bookmark, &a.windowSize)
+		a.bookmark = bookmarktui.New(bookmark, a.selectedCategory, &a.windowSize)
 		a.state = bookmarkView
 
 	case tuicommands.SelectCategoryMsg:
@@ -33,11 +33,15 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.state = bookmarksView
 		}
 
-	case tuicommands.BookmarkViewMsg:
+	case tuicommands.BookmarksViewMsg:
 		a.state = bookmarksView
 
 	case tuicommands.ReloadBookmarksMsg:
 		a.bookmarks = bookmarkstui.New(a.selectedCategory, &a.windowSize)
+
+	case tuicommands.SaveBookmarkMsg:
+		a.bookmarks = bookmarkstui.New(a.selectedCategory, &a.windowSize)
+		a.state = bookmarksView
 
 	}
 

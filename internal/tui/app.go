@@ -6,9 +6,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"golang.org/x/term"
 
-	bookmarktui "github.com/evcraddock/bm/cmd/bm/tui/bookmark"
-	bookmarkstui "github.com/evcraddock/bm/cmd/bm/tui/bookmarks"
-	categorytui "github.com/evcraddock/bm/cmd/bm/tui/categories"
+	bookmarktui "github.com/evcraddock/bm/internal/tui/bookmark"
+	bookmarkstui "github.com/evcraddock/bm/internal/tui/bookmarks"
+	categorytui "github.com/evcraddock/bm/internal/tui/categories"
 )
 
 type sessionState int
@@ -29,7 +29,7 @@ type App struct {
 }
 
 func New(category string) App {
-	bookmarkModel := bookmarktui.New(nil, nil)
+	bookmarkModel := bookmarktui.New(nil, category, nil)
 	bookmarksModel := bookmarkstui.New(category, nil)
 	categoryModel := categorytui.New(category, nil)
 

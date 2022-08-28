@@ -5,12 +5,17 @@ import (
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
 
-type BookmarkViewMsg bool
+type BookmarksViewMsg bool
 type CategoryViewMsg bool
 type ReloadBookmarksMsg bool
+type SaveBookmarkMsg bool
 
 type SelectBookmarkMsg struct {
 	SelectedBookmark *bookmarks.Bookmark
+}
+
+type SelectBookmarkTitleMsg struct {
+	Title string
 }
 
 type SelectCategoryMsg struct {
@@ -27,5 +32,11 @@ func SelectCategory(category string, switchView bool) tea.Cmd {
 func SelectBookmark(bookmark *bookmarks.Bookmark) tea.Cmd {
 	return func() tea.Msg {
 		return SelectBookmarkMsg{SelectedBookmark: bookmark}
+	}
+}
+
+func SelectBookmarkByTitle(bookmark string) tea.Cmd {
+	return func() tea.Msg {
+		return SelectBookmarkTitleMsg{Title: bookmark}
 	}
 }

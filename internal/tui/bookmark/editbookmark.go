@@ -8,9 +8,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	tuicommands "github.com/evcraddock/bm/cmd/bm/tui/commands"
+	tuicommands "github.com/evcraddock/bm/internal/tui/commands"
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
+
+type errMsg struct{ err error }
+
+func (e errMsg) Error() string { return e.err.Error() }
 
 var (
 	// Need global constants file
@@ -29,15 +33,17 @@ var (
 
 type Model struct {
 	bookmark   *bookmarks.Bookmark
+	manager    *bookmarks.BookmarkManager
 	windowSize *tea.WindowSizeMsg
 	focusIndex int
 	inputs     []textinput.Model
 	cursorMode textinput.CursorMode
 }
 
-func New(bookmark *bookmarks.Bookmark, windowSize *tea.WindowSizeMsg) Model {
+func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSizeMsg) Model {
 	m := Model{
 		bookmark:   bookmark,
+		manager:    bookmarks.NewBookmarkManager(false, category),
 		windowSize: windowSize,
 		inputs:     make([]textinput.Model, 3),
 	}
@@ -77,6 +83,27 @@ func (m Model) Init() tea.Cmd {
 	return nil
 }
 
+func (m Model) updateBookmark() tea.Msg {
+	updated := m.bookmark
+
+	if err := m.manager.Remove(m.bookmark.Title); err != nil {
+		return errMsg{err}
+	}
+
+	updated.Title = m.inputs[0].Value()
+	updated.URL = m.inputs[1].Value()
+	updated.Author = m.inputs[2].Value()
+
+	if ok, err := m.manager.Upsert(updated); err != nil {
+		return errMsg{err}
+	} else if ok {
+		return tuicommands.SaveBookmarkMsg(true)
+	}
+
+	return nil
+
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -86,22 +113,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "esc":
 			return m, func() tea.Msg {
-				return tuicommands.BookmarkViewMsg(true)
+				return tuicommands.BookmarksViewMsg(true)
 			}
 
 		case "ctrl+c":
 			return m, tea.Quit
-
-		// case "ctrl+r":
-		// 	m.cursorMode++
-		// 	if m.cursorMode > textinput.CursorHide {
-		// 		m.cursorMode = textinput.CursorBlink
-		// 	}
-		// 	cmds := make([]tea.Cmd, len(m.inputs))
-		// 	for i := range m.inputs {
-		// 		cmds[i] = m.inputs[i].SetCursorMode(m.cursorMode)
-		// 	}
-		// 	return m, tea.Batch(cmds...)
 
 		case "tab", "shift+tab", "enter", "up", "down":
 			s := msg.String()
@@ -109,7 +125,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Did the user press enter while the submit button was focused?
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
-				return m, tea.Quit
+				return m, func() tea.Msg {
+					return m.updateBookmark()
+				}
 			}
 
 			// Cycle indexes
