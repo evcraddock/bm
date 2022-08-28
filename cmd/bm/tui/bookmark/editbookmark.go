@@ -13,6 +13,9 @@ import (
 )
 
 var (
+	// Need global constants file
+	marginHeight        = 4
+	docStyle            = lipgloss.NewStyle().Margin(1, 1)
 	focusedStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	blurredStyle        = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
 	cursorStyle         = focusedStyle.Copy()
@@ -39,30 +42,32 @@ func New(bookmark *bookmarks.Bookmark, windowSize *tea.WindowSizeMsg) Model {
 		inputs:     make([]textinput.Model, 3),
 	}
 
-	if bookmark != nil {
-		var t textinput.Model
-		for i := range m.inputs {
-			t = textinput.New()
-			t.CursorStyle = cursorStyle
-			t.CharLimit = 32
+	if bookmark == nil {
+		m.bookmark = &bookmarks.Bookmark{}
+	}
 
-			switch i {
-			case 0:
-				t.Placeholder = "Nickname"
-				t.SetValue(bookmark.Title)
-				t.Focus()
-				t.PromptStyle = focusedStyle
-				t.TextStyle = focusedStyle
-			case 1:
-				t.Placeholder = "URL"
-				t.SetValue(bookmark.URL)
-			case 2:
-				t.Placeholder = "Author"
-				t.SetValue(bookmark.Author)
-			}
+	var t textinput.Model
+	for i := range m.inputs {
+		t = textinput.New()
+		t.CursorStyle = cursorStyle
+		t.CharLimit = 32
 
-			m.inputs[i] = t
+		switch i {
+		case 0:
+			t.Placeholder = "Nickname"
+			t.SetValue(m.bookmark.Title)
+			t.Focus()
+			t.PromptStyle = focusedStyle
+			t.TextStyle = focusedStyle
+		case 1:
+			t.Placeholder = "URL"
+			t.SetValue(m.bookmark.URL)
+		case 2:
+			t.Placeholder = "Author"
+			t.SetValue(m.bookmark.Author)
 		}
+
+		m.inputs[i] = t
 	}
 
 	return m
@@ -74,7 +79,6 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	// var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -84,11 +88,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, func() tea.Msg {
 				return tuicommands.BookmarkViewMsg(true)
 			}
-
-		// case "shift+tab":
-		// 	return m, func() tea.Msg {
-		// 		return tuicommands.CategoryViewMsg(true)
-		// 	}
 
 		case "ctrl+c":
 			return m, tea.Quit
@@ -143,13 +142,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, tea.Batch(cmds...)
 		}
-
-	case tea.WindowSizeMsg:
-		m.windowSize = &msg
-		// b.list.SetSize(b.getWindowSize())
 	}
 
-	// cmds = append(cmds, cmd)
 	cmd = m.updateInputs(msg)
 	return m, cmd
 }
@@ -170,11 +164,12 @@ func (m Model) View() string {
 	}
 	fmt.Fprintf(&b, "\n\n%s\n\n", *button)
 
-	// b.WriteString(helpStyle.Render("cursor mode is "))
-	// b.WriteString(cursorModeHelpStyle.Render(m.cursorMode.String()))
-	// b.WriteString(helpStyle.Render(" (ctrl+r to change style)"))
+	if m.windowSize != nil {
+		height := m.windowSize.Height - marginHeight
+		docStyle = docStyle.Height(height)
+	}
 
-	return b.String()
+	return docStyle.Render(b.String())
 }
 
 func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
