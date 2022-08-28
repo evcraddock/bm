@@ -90,7 +90,11 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// case "ctrl+e":
 		// 	selectedItem := b.list.SelectedItem().(item)
-		// 	bookmark, _ := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
+		// 	bookmark, err := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
+		// 	if err != nil {
+		// 		// TODO return error msg instead of panic
+		// 		panic(err)
+		// 	}
 		// 	return b, tuicommands.SelectBookmark(bookmark)
 
 		default:
@@ -101,8 +105,6 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		b.windowSize = &msg
 		b.list.SetSize(b.getWindowSize())
-
-		// b.list.Title = fmt.Sprintf("%s | list: {%v, %v} | term: %v", b.list.Title, b.list.Width(), b.list.Height(), getTerminalSize())
 	}
 
 	cmds = append(cmds, cmd)
@@ -167,8 +169,3 @@ func (b Model) openSelectedUrl() tea.Msg {
 
 	return nil
 }
-
-// func getTerminalSize() tea.WindowSizeMsg {
-// 	w, h, _ := term.GetSize(int(os.Stdout.Fd()))
-// 	return tea.WindowSizeMsg{Width: w, Height: h}
-// }

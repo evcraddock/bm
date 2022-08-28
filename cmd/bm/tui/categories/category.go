@@ -31,9 +31,8 @@ var (
 
 type Model struct {
 	categories []categories.Category
-	category   string
-	cursor     int
-	selected   map[int]interface{}
+	index      int
+	selected   categories.Category
 	windowSize *tea.WindowSizeMsg
 }
 
@@ -48,15 +47,14 @@ func New(category string, windowSize *tea.WindowSizeMsg) Model {
 		panic(err)
 	}
 
-	categoryModel := Model{
+	m := Model{
 		categories: l,
-		category:   category,
-		selected:   make(map[int]interface{}),
 		windowSize: windowSize,
 	}
 
-	categoryModel.cursor = categoryModel.getSelectedCategoryIndex()
-	return categoryModel
+	m.index = m.Index(category)
+	m.selected = l[m.index]
+	return m
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -71,24 +69,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
+			if m.index > 0 {
+				m.index--
 			}
 			cmd = m.setSelected(false)
 
 		case "down", "j":
-			if m.cursor < len(m.categories)-1 {
-				m.cursor++
+			if m.index < len(m.categories)-1 {
+				m.index++
 			}
 			cmd = m.setSelected(false)
 
 		case "g":
-			m.cursor = 0
+			m.index = 0
 			cmd = m.setSelected(false)
 
 		case "G":
 			if len(m.categories) > 0 {
-				m.cursor = len(m.categories) - 1
+				m.index = len(m.categories) - 1
 			}
 			cmd = m.setSelected(false)
 
@@ -107,7 +105,7 @@ func (m Model) View() string {
 		cursor := "  "
 		name := itemStyle.SetString(category.Name).String()
 
-		if m.cursor == i {
+		if m.index == i {
 			cursor = itemSelectedStyle.SetString("->").String()
 			name = itemSelectedStyle.Background(lipgloss.Color("62")).SetString(category.Name).String()
 		}
@@ -120,12 +118,12 @@ func (m Model) View() string {
 		docStyle = docStyle.Height(height)
 	}
 
-	return docStyle.Render(fmt.Sprintf("%s\n\n%s", title, s))
+	return docStyle.Render(fmt.Sprintf("%s \n\n%s", title, s))
 }
 
-func (m Model) getSelectedCategoryIndex() int {
-	for i, category := range m.categories {
-		if category.Name == m.category {
+func (m Model) Index(category string) int {
+	for i, c := range m.categories {
+		if c.Name == category {
 			return i
 		}
 	}
@@ -134,15 +132,6 @@ func (m Model) getSelectedCategoryIndex() int {
 }
 
 func (m Model) setSelected(switchView bool) tea.Cmd {
-	_, ok := m.selected[m.cursor]
-	if ok {
-		delete(m.selected, m.cursor)
-	} else {
-		category := m.categories[m.cursor]
-		m.selected[m.cursor] = category
-
-		return tuicommands.SelectCategory(category.Name, switchView)
-	}
-
-	return nil
+	m.selected = m.categories[m.index]
+	return tuicommands.SelectCategory(m.selected.Name, switchView)
 }
