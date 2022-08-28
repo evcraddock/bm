@@ -6,7 +6,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	tuicommands "github.com/evcraddock/bm/cmd/bm/tui/commands"
+	tuicommands "github.com/evcraddock/bm/internal/tui/commands"
 	"github.com/evcraddock/bm/pkg/categories"
 )
 

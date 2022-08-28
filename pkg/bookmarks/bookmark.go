@@ -63,8 +63,8 @@ func (b *BookmarkManager) SetCategory(category string) {
 
 // GetBookmarkLocation return the folder location where bookmarks are stored
 func (b *BookmarkManager) GetBookmarkLocation(title string) string {
-
-	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, title)
+	folderTitle := utils.ScrubFolder(title)
+	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
 	return bookmarkLocation
 }
 
@@ -92,7 +92,6 @@ func (b *BookmarkManager) LoadBookmarks() ([]Bookmark, error) {
 	var bookmarks []Bookmark
 
 	err := filepath.Walk(bookmarkLocation, func(path string, info os.FileInfo, err error) error {
-
 		if err != nil {
 			return nil
 		}
@@ -124,11 +123,28 @@ func (b *BookmarkManager) Save(bookmark *Bookmark) (bool, error) {
 		return false, err
 	}
 
-	if err := b.savePreview(bookmark.URL, bookmark.location); err != nil {
-		return true, err
+	b.savePreview(bookmark.URL, bookmark.location)
+	return true, nil
+}
+
+func (b *BookmarkManager) Upsert(bookmark *Bookmark) (bool, error) {
+	if ok, location := b.createFolder(bookmark.Title); ok {
+		bookmark.location = location
+		return b.Save(bookmark)
 	}
 
-	return true, nil
+	folderTitle := utils.ScrubFolder(bookmark.Title)
+	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
+	updated, err := b.Load(bookmarkLocation)
+	if err != nil {
+		return false, err
+	}
+
+	updated.URL = bookmark.URL
+	updated.Author = bookmark.Author
+	updated.Tags = bookmark.Tags
+
+	return b.Save(updated)
 }
 
 // Create save a new bookmark
@@ -143,16 +159,11 @@ func (b *BookmarkManager) Create(title, url string) (bool, error) {
 		bookmark = b.Edit(bookmark)
 	}
 
-	if ok, location := b.createFolder(bookmark.Title); ok {
-		bookmark.location = location
-		return b.Save(bookmark)
-	}
-
-	return false, fmt.Errorf("bookmark %s already exists", title)
+	return b.Upsert(bookmark)
 }
 
 // Update updates and existing bookmark
-func (b *BookmarkManager) Update(title string) (bool, error) {
+func (b *BookmarkManager) UpdatePrompt(title string) (bool, error) {
 	folderTitle := utils.ScrubFolder(title)
 	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
 

@@ -7,7 +7,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 
-	"github.com/evcraddock/bm/cmd/bm/tui"
+	"github.com/evcraddock/bm/internal/tui"
 )
 
 var (
@@ -54,7 +54,7 @@ func init() {
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(deleteCmd)
-	rootCmd.AddCommand(updateCmd)
+	// rootCmd.AddCommand(updateCmd)
 }
 
 func Execute() {

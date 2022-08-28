@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/philipjkim/goreadability"
+	readability "github.com/philipjkim/goreadability"
 )
 
 type urlImage struct {
@@ -57,10 +57,7 @@ func (b *BookmarkManager) savePreview(url, location string) error {
 
 	if len(content.Images) > 0 {
 		imageURL := content.Images[0].URL
-		bannerImageURL, err = downloadImage(imageURL, location)
-		if err != nil {
-			fmt.Printf("unable to download image %s \n", imageURL)
-		}
+		bannerImageURL, _ = downloadImage(imageURL, location)
 	}
 
 	data := preview{

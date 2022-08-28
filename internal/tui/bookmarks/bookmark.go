@@ -1,13 +1,14 @@
 package bookmarkstui
 
 import (
+	"fmt"
 	"os/exec"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	tuicommands "github.com/evcraddock/bm/cmd/bm/tui/commands"
+	tuicommands "github.com/evcraddock/bm/internal/tui/commands"
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
 
@@ -90,10 +91,13 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "ctrl+e":
 			selectedItem := b.list.SelectedItem().(item)
-			bookmark, err := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
+			filelocation := b.manager.GetBookmarkLocation(selectedItem.Title())
+			b.list.Title = fmt.Sprintf("%v \n %v", b.list.Title, filelocation)
+			bookmark, err := b.manager.Load(filelocation)
 			if err != nil {
-				// TODO return error msg instead of panic
-				panic(err)
+				return b, func() tea.Msg {
+					return errMsg{err}
+				}
 			}
 			return b, tuicommands.SelectBookmark(bookmark)
 
