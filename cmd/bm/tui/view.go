@@ -5,7 +5,9 @@ import (
 )
 
 var (
-	boxStyle         = lipgloss.NewStyle().MarginTop(1)
+	// TODO: get left pane width from first load
+	leftWidth        = 40
+	rightWidth       = getTerminalSize().Width - leftWidth - 3
 	selectedBoxStyle = lipgloss.NewStyle().Border(lipgloss.NormalBorder(), true, true, true, true)
 )
 
@@ -24,7 +26,7 @@ func (a App) loadSinglePane() string {
 func (a App) loadMultiPane() string {
 	leftBoxStyle := lipgloss.NewStyle().MarginTop(1).MarginLeft(1)
 	rightBoxStyle := lipgloss.NewStyle().MarginTop(1).MarginLeft(-1)
-	// selectView := a.bookmarks.View()
+
 	var selectView string
 
 	switch a.state {
@@ -43,11 +45,16 @@ func (a App) loadMultiPane() string {
 		rightBoxStyle = selectedBoxStyle
 	}
 
-	return lipgloss.JoinVertical(
+	contentPane := lipgloss.JoinHorizontal(
 		lipgloss.Top,
-		lipgloss.JoinHorizontal(
-			lipgloss.Top,
-			leftBoxStyle.Render(a.category.View()),
-			rightBoxStyle.Render(selectView)),
+		leftBoxStyle.Width(leftWidth).Render(a.category.View()),
+		rightBoxStyle.Width(rightWidth).Render(selectView),
 	)
+
+	mainPane := lipgloss.JoinVertical(
+		lipgloss.Top,
+		contentPane,
+	)
+
+	return mainPane
 }

@@ -13,6 +13,7 @@ require (
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.4.0 // indirect
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 )

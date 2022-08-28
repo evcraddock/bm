@@ -11,8 +11,7 @@ import (
 )
 
 var (
-	docStyle  = lipgloss.NewStyle().Margin(1, 1)
-	highlight = lipgloss.AdaptiveColor{Light: "#874BFD", Dark: "#7D56F4"}
+	docStyle = lipgloss.NewStyle().Margin(1, 1)
 
 	title = lipgloss.NewStyle().
 		MarginLeft(1).
@@ -27,7 +26,7 @@ var (
 	itemSelectedStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("230"))
 
-	offsetHeight = 2
+	marginHeight = 4
 )
 
 type Model struct {
@@ -116,13 +115,12 @@ func (m Model) View() string {
 		s += lipgloss.NewStyle().Render(fmt.Sprintf("%s %s \n", cursor, name))
 	}
 
-	var height int
 	if m.windowSize != nil {
-		_, v := docStyle.GetFrameSize()
-		height = m.windowSize.Height - v - offsetHeight
+		height := m.windowSize.Height - marginHeight
+		docStyle = docStyle.Height(height)
 	}
 
-	return docStyle.Height(height).Render(fmt.Sprintf("%s\n\n%s", title, s))
+	return docStyle.Render(fmt.Sprintf("%s\n\n%s", title, s))
 }
 
 func (m Model) getSelectedCategoryIndex() int {
@@ -147,5 +145,4 @@ func (m Model) setSelected(switchView bool) tea.Cmd {
 	}
 
 	return nil
-
 }
