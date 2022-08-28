@@ -1,7 +1,10 @@
 package tui
 
 import (
+	"os"
+
 	tea "github.com/charmbracelet/bubbletea"
+	"golang.org/x/term"
 
 	bookmarktui "github.com/evcraddock/bm/cmd/bm/tui/bookmark"
 	bookmarkstui "github.com/evcraddock/bm/cmd/bm/tui/bookmarks"
@@ -41,4 +44,9 @@ func New(category string) App {
 
 func (a App) Init() tea.Cmd {
 	return nil
+}
+
+func getTerminalSize() tea.WindowSizeMsg {
+	w, h, _ := term.GetSize(int(os.Stdout.Fd()))
+	return tea.WindowSizeMsg{Width: w, Height: h}
 }

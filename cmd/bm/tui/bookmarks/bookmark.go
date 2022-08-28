@@ -13,7 +13,7 @@ import (
 
 var (
 	docStyle     = lipgloss.NewStyle().Margin(1, 1)
-	offsetHeight = 2
+	marginHeight = 4
 )
 
 type errMsg struct{ err error }
@@ -101,6 +101,8 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		b.windowSize = &msg
 		b.list.SetSize(b.getWindowSize())
+
+		// b.list.Title = fmt.Sprintf("%s | list: {%v, %v} | term: %v", b.list.Title, b.list.Width(), b.list.Height(), getTerminalSize())
 	}
 
 	cmds = append(cmds, cmd)
@@ -112,8 +114,7 @@ func (b Model) View() string {
 }
 
 func (b Model) getWindowSize() (int, int) {
-	_, v := docStyle.GetFrameSize()
-	return b.windowSize.Width, b.windowSize.Height - v - offsetHeight
+	return b.windowSize.Width, b.windowSize.Height - marginHeight
 }
 
 func (b Model) getSelectedBookmark() tea.Msg {
@@ -166,3 +167,8 @@ func (b Model) openSelectedUrl() tea.Msg {
 
 	return nil
 }
+
+// func getTerminalSize() tea.WindowSizeMsg {
+// 	w, h, _ := term.GetSize(int(os.Stdout.Fd()))
+// 	return tea.WindowSizeMsg{Width: w, Height: h}
+// }
