@@ -17,7 +17,7 @@ import (
 
 // Bookmark bookmark data
 type Bookmark struct {
-	Title     string    `yaml:"title"`
+	Name      string    `yaml:"title"`
 	URL       string    `yaml:"url"`
 	Author    string    `yaml:"author,omitempty"`
 	Tags      []string  `yaml:"tags,omitempty"`
@@ -25,11 +25,11 @@ type Bookmark struct {
 	location  string
 }
 
-type ByTitle []Bookmark
+type ByName []Bookmark
 
-func (a ByTitle) Len() int           { return len(a) }
-func (a ByTitle) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByTitle) Less(i, j int) bool { return a[i].Title < a[j].Title }
+func (a ByName) Len() int           { return len(a) }
+func (a ByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool { return a[i].Name < a[j].Name }
 
 type ByDateAdded []Bookmark
 
@@ -63,8 +63,8 @@ func (b *BookmarkManager) SetCategory(category string) {
 
 // GetBookmarkLocation return the folder location where bookmarks are stored
 func (b *BookmarkManager) GetBookmarkLocation(title string) string {
-	folderTitle := utils.ScrubFolder(title)
-	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
+	folderName := utils.ScrubFolder(title)
+	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderName)
 	return bookmarkLocation
 }
 
@@ -128,13 +128,13 @@ func (b *BookmarkManager) Save(bookmark *Bookmark) (bool, error) {
 }
 
 func (b *BookmarkManager) Upsert(bookmark *Bookmark) (bool, error) {
-	if ok, location := b.createFolder(bookmark.Title); ok {
+	if ok, location := b.createFolder(bookmark.Name); ok {
 		bookmark.location = location
 		return b.Save(bookmark)
 	}
 
-	folderTitle := utils.ScrubFolder(bookmark.Title)
-	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
+	folderName := utils.ScrubFolder(bookmark.Name)
+	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderName)
 	updated, err := b.Load(bookmarkLocation)
 	if err != nil {
 		return false, err
@@ -150,7 +150,7 @@ func (b *BookmarkManager) Upsert(bookmark *Bookmark) (bool, error) {
 // Create save a new bookmark
 func (b *BookmarkManager) Create(title, url string) (bool, error) {
 	bookmark := &Bookmark{
-		Title:     title,
+		Name:      title,
 		URL:       url,
 		DateAdded: time.Now(),
 	}
@@ -164,8 +164,8 @@ func (b *BookmarkManager) Create(title, url string) (bool, error) {
 
 // Update updates and existing bookmark
 func (b *BookmarkManager) UpdatePrompt(title string) (bool, error) {
-	folderTitle := utils.ScrubFolder(title)
-	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
+	folderName := utils.ScrubFolder(title)
+	bookmarkLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderName)
 
 	bookmark, err := b.Load(bookmarkLocation)
 	if err != nil {
@@ -173,8 +173,8 @@ func (b *BookmarkManager) UpdatePrompt(title string) (bool, error) {
 	}
 
 	newbookmark := b.Edit(bookmark)
-	if title != newbookmark.Title {
-		if ok, location := b.moveFolder(bookmark.location, newbookmark.Title); ok {
+	if title != newbookmark.Name {
+		if ok, location := b.moveFolder(bookmark.location, newbookmark.Name); ok {
 			newbookmark.location = location
 		} else {
 			return false, fmt.Errorf("Error moving folder %s", bookmark.location)
@@ -187,13 +187,13 @@ func (b *BookmarkManager) UpdatePrompt(title string) (bool, error) {
 // Edit prompts for changes to a bookmark
 func (b *BookmarkManager) Edit(bookmark *Bookmark) *Bookmark {
 	fmt.Printf("To keep current value press return\n")
-	title := utils.StringPrompt("Title", bookmark.Title)
+	title := utils.StringPrompt("Name", bookmark.Name)
 	url := utils.StringPrompt("Link", bookmark.URL)
 	author := utils.StringPrompt("Author", bookmark.Author)
 	tags := utils.ListPrompt("Tags", strings.Join(bookmark.Tags, ","))
 
 	newBookMark := &Bookmark{
-		Title:    title,
+		Name:     title,
 		URL:      url,
 		Author:   author,
 		Tags:     tags,
@@ -211,15 +211,15 @@ func (b *BookmarkManager) Remove(title string) error {
 		return nil
 	}
 
-	folderTitle := utils.ScrubFolder(title)
-	bookmarklocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
+	folderName := utils.ScrubFolder(title)
+	bookmarklocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderName)
 
 	return utils.RemoveFolder(bookmarklocation)
 }
 
 func (b *BookmarkManager) createFolder(title string) (bool, string) {
-	folderTitle := utils.ScrubFolder(title)
-	saveLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderTitle)
+	folderName := utils.ScrubFolder(title)
+	saveLocation := fmt.Sprintf("%s/%s/%s", b.bookmarkFolder, b.category, folderName)
 
 	if ok := utils.CreateFolder(saveLocation); !ok {
 		return false, saveLocation

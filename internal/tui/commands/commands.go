@@ -7,9 +7,15 @@ import (
 
 type BookmarksViewMsg bool
 type CategoryViewMsg bool
-type ReloadBookmarksMsg bool
-type SaveBookmarkMsg bool
 type CreateBookmarkMsg bool
+
+type ReloadBookmarksMsg struct {
+	SelectedIndex int
+}
+
+type SaveBookmarkMsg struct {
+	SelectedBookmark *bookmarks.Bookmark
+}
 
 type SelectBookmarkMsg struct {
 	SelectedBookmark *bookmarks.Bookmark
@@ -29,5 +35,17 @@ func SelectCategory(category string, switchView bool) tea.Cmd {
 func SelectBookmark(bookmark *bookmarks.Bookmark) tea.Cmd {
 	return func() tea.Msg {
 		return SelectBookmarkMsg{SelectedBookmark: bookmark}
+	}
+}
+
+func SaveBookmark(bookmark *bookmarks.Bookmark) tea.Cmd {
+	return func() tea.Msg {
+		return SaveBookmarkMsg{SelectedBookmark: bookmark}
+	}
+}
+
+func ReloadBookmarks(index int) tea.Cmd {
+	return func() tea.Msg {
+		return ReloadBookmarksMsg{SelectedIndex: index}
 	}
 }
