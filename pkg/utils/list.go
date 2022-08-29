@@ -4,6 +4,10 @@ import (
 	"strings"
 )
 
+func ToList(csv string) []string {
+	return toList(csv)
+}
+
 func toList(csv string) []string {
 	var list []string
 

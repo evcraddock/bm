@@ -3,6 +3,7 @@ package bookmarkstui
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
@@ -28,23 +29,49 @@ type Model struct {
 	windowSize *tea.WindowSizeMsg
 }
 
-type item struct {
-	name, description string
+type bookmark struct {
+	bookmarks.Bookmark
 }
 
-func (i item) Title() string       { return i.name }
-func (i item) Description() string { return i.description }
-func (i item) FilterValue() string { return i.name }
+func (i bookmark) Title() string {
+	var b strings.Builder
+	b.WriteString(i.Name)
 
-func New(category string, windowSize *tea.WindowSizeMsg) Model {
+	if i.Author != "" {
+		b.WriteString(fmt.Sprintf(" (by %s)", i.Author))
+	}
+
+	return b.String()
+}
+
+func (i bookmark) Description() string {
+	var b strings.Builder
+
+	for _, tag := range i.Tags {
+		b.WriteString(fmt.Sprintf("[%s] ", strings.Trim(tag, " ")))
+	}
+
+	b.WriteString(i.URL)
+	return b.String()
+}
+
+func (i bookmark) FilterValue() string {
+	return i.Name
+}
+
+func New(category, selectedBookmark string, selectedIndex int, windowSize *tea.WindowSizeMsg) Model {
 	bookmarkModel := Model{
 		manager:    bookmarks.NewBookmarkManager(false, category),
 		category:   category,
 		windowSize: windowSize,
 	}
 
-	m := bookmarkModel.loadBookmarksList(category)
+	m := bookmarkModel.loadBookmarksList(category, selectedBookmark, selectedIndex)
 	m.Title = category
+	m.SetShowFilter(false)
+	m.SetStatusBarItemName("bookmark", "bookmarks")
+	m.SetFilteringEnabled(false)
+	m.SetShowStatusBar(len(m.Items()) > 0)
 
 	if windowSize != nil {
 		width, height := bookmarkModel.getWindowSize()
@@ -66,7 +93,6 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-
 		case "esc", "shift+tab":
 			return b, func() tea.Msg {
 				return tuicommands.CategoryViewMsg(true)
@@ -75,31 +101,17 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return b, tea.Quit
 
-		case "ctrl+o", "enter":
+		case "ctrl+o":
 			b.openSelectedUrl()
 
 		case "ctrl+r":
-			return b, func() tea.Msg {
-				return tuicommands.ReloadBookmarksMsg(true)
-			}
+			return b, tuicommands.ReloadBookmarks(b.list.Index())
 
 		case "ctrl+d":
-			b.deleteBookmark()
-			return b, func() tea.Msg {
-				return tuicommands.ReloadBookmarksMsg(true)
-			}
+			return b, b.deleteBookmark()
 
 		case "ctrl+e":
-			selectedItem := b.list.SelectedItem().(item)
-			filelocation := b.manager.GetBookmarkLocation(selectedItem.Title())
-			b.list.Title = fmt.Sprintf("%v \n %v", b.list.Title, filelocation)
-			bookmark, err := b.manager.Load(filelocation)
-			if err != nil {
-				return b, func() tea.Msg {
-					return errMsg{err}
-				}
-			}
-			return b, tuicommands.SelectBookmark(bookmark)
+			return b, b.getSelectedBookmark()
 
 		case "ctrl+n":
 			return b, func() tea.Msg {
@@ -128,49 +140,63 @@ func (b Model) getWindowSize() (int, int) {
 	return b.windowSize.Width, b.windowSize.Height - marginHeight
 }
 
-func (b Model) getSelectedBookmark() tea.Msg {
-	selectedItem := b.list.SelectedItem().(item)
-	bookmark, err := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Title()))
+func (b Model) getSelectedBookmark() tea.Cmd {
+	selectedItem := b.list.SelectedItem().(bookmark)
+	bookmark, err := b.manager.Load(b.manager.GetBookmarkLocation(selectedItem.Name))
 	if err != nil {
-		return errMsg{err}
+		return func() tea.Msg {
+			return errMsg{err}
+		}
 	}
 
 	return tuicommands.SelectBookmark(bookmark)
 }
 
-func (b Model) deleteBookmark() tea.Msg {
-	bookmark := b.list.SelectedItem().(item)
-	if bookmark.Title() != "" {
-		err := b.manager.Remove(bookmark.Title())
+func (b Model) deleteBookmark() tea.Cmd {
+	bookmark := b.list.SelectedItem().(bookmark)
+	if bookmark.Name != "" {
+		err := b.manager.Remove(bookmark.Name)
 		if err != nil {
-			return errMsg{err}
+			return func() tea.Msg {
+				return errMsg{err}
+			}
 		}
 	}
 
-	b.list.RemoveItem(b.list.Index())
+	index := b.list.Index()
+	lastIndex := len(b.list.Items()) - 1
+	b.list.RemoveItem(index)
+	if index > 0 && lastIndex == index {
+		index--
+	}
 
-	return nil
+	return tuicommands.ReloadBookmarks(index)
 }
 
-func (b Model) loadBookmarksList(category string) list.Model {
+func (b Model) loadBookmarksList(category, bookmarkName string, selectedIndex int) list.Model {
 	l, err := b.manager.LoadBookmarks()
 	if err != nil {
 		panic(err)
 	}
 
+	index := selectedIndex
 	items := []list.Item{}
-	for _, bm := range l {
-		items = append(items, item{name: bm.Title, description: bm.URL})
+	for i := 0; i < len(l); i++ {
+		bm := l[i]
+		items = append(items, bookmark{bm})
+		if selectedIndex > 0 && bm.Name == bookmarkName {
+			index = i
+		}
 	}
 
 	m := list.New(items, list.NewDefaultDelegate(), 0, 0)
-
+	m.Select(index)
 	return m
 }
 
 func (b Model) openSelectedUrl() tea.Msg {
-	selectedItem := b.list.SelectedItem().(item)
-	cmd := exec.Command("xdg-open", selectedItem.description)
+	bookmark := b.list.SelectedItem().(bookmark)
+	cmd := exec.Command("xdg-open", bookmark.URL)
 	err := cmd.Start()
 	if err != nil {
 		return errMsg{err}

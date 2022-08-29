@@ -30,7 +30,7 @@ type App struct {
 
 func New(category string) App {
 	bookmarkModel := bookmarktui.New(nil, category, nil)
-	bookmarksModel := bookmarkstui.New(category, nil)
+	bookmarksModel := bookmarkstui.New(category, "", 0, nil)
 	categoryModel := categorytui.New(category, nil)
 
 	return App{
