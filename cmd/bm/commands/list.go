@@ -73,7 +73,7 @@ func cmdListBookmarks(cmd *cobra.Command, args []string) {
 	header := fmt.Sprintf("Title\tLink")
 	fmt.Fprintln(writer, header)
 	for _, bookmark := range bookmarks {
-		row := fmt.Sprintf("%s\t%s", bookmark.Title, bookmark.URL)
+		row := fmt.Sprintf("%s\t%s", bookmark.Name, bookmark.URL)
 		fmt.Fprintln(writer, row)
 	}
 

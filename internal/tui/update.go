@@ -28,7 +28,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tuicommands.SelectCategoryMsg:
 		a.selectedCategory = msg.SelectedCategory
-		a.bookmarks = bookmarkstui.New(msg.SelectedCategory, &a.windowSize)
+		a.bookmarks = bookmarkstui.New(msg.SelectedCategory, "", 0, &a.windowSize)
 		if msg.SwitchView {
 			a.state = bookmarksView
 		}
@@ -37,10 +37,11 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.state = bookmarksView
 
 	case tuicommands.ReloadBookmarksMsg:
-		a.bookmarks = bookmarkstui.New(a.selectedCategory, &a.windowSize)
+		a.bookmarks = bookmarkstui.New(a.selectedCategory, "", msg.SelectedIndex, &a.windowSize)
 
 	case tuicommands.SaveBookmarkMsg:
-		a.bookmarks = bookmarkstui.New(a.selectedCategory, &a.windowSize)
+		bookmark := msg.SelectedBookmark
+		a.bookmarks = bookmarkstui.New(a.selectedCategory, bookmark.Name, 0, &a.windowSize)
 		a.state = bookmarksView
 
 	case tuicommands.CreateBookmarkMsg:

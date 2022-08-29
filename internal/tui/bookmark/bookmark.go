@@ -10,6 +10,7 @@ import (
 
 	tuicommands "github.com/evcraddock/bm/internal/tui/commands"
 	"github.com/evcraddock/bm/pkg/bookmarks"
+	"github.com/evcraddock/bm/pkg/utils"
 )
 
 type errMsg struct{ err error }
@@ -47,7 +48,7 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 		manager:    bookmarks.NewBookmarkManager(false, category),
 		category:   category,
 		windowSize: windowSize,
-		inputs:     make([]textinput.Model, 4),
+		inputs:     make([]textinput.Model, 5),
 	}
 
 	if bookmark == nil {
@@ -63,7 +64,7 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 		switch i {
 		case 0:
 			t.Placeholder = "Nickname"
-			t.SetValue(m.bookmark.Title)
+			t.SetValue(m.bookmark.Name)
 			t.Focus()
 			t.PromptStyle = focusedStyle
 			t.TextStyle = focusedStyle
@@ -74,6 +75,9 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 			t.Placeholder = "Author"
 			t.SetValue(m.bookmark.Author)
 		case 3:
+			t.Placeholder = "Tags"
+			t.SetValue(strings.Join(m.bookmark.Tags, ","))
+		case 4:
 			t.Placeholder = "Category"
 			t.SetValue(category)
 		}
@@ -86,34 +90,6 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 
 func (m Model) Init() tea.Cmd {
 	return nil
-}
-
-func (m Model) updateBookmark() tea.Msg {
-	updated := m.bookmark
-
-	if m.bookmark != nil && m.bookmark.Title != "" {
-		if err := m.manager.Remove(m.bookmark.Title); err != nil {
-			return errMsg{err}
-		}
-	}
-
-	updated.Title = m.inputs[0].Value()
-	updated.URL = m.inputs[1].Value()
-	updated.Author = m.inputs[2].Value()
-	updatedCategory := m.inputs[3].Value()
-
-	if m.category != updatedCategory {
-		m.manager = bookmarks.NewBookmarkManager(false, updatedCategory)
-	}
-
-	if ok, err := m.manager.Upsert(updated); err != nil {
-		return errMsg{err}
-	} else if ok {
-		return tuicommands.SaveBookmarkMsg(true)
-	}
-
-	return nil
-
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -137,9 +113,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Did the user press enter while the submit button was focused?
 			// If so, exit.
 			if s == "enter" && m.focusIndex == len(m.inputs) {
-				return m, func() tea.Msg {
-					return m.updateBookmark()
-				}
+				return m, m.updateBookmark()
 			}
 
 			// Cycle indexes
@@ -210,4 +184,32 @@ func (m *Model) updateInputs(msg tea.Msg) tea.Cmd {
 	}
 
 	return tea.Batch(cmds...)
+}
+
+func (m Model) updateBookmark() tea.Cmd {
+	updated := m.bookmark
+
+	if m.bookmark != nil && m.bookmark.Name != "" {
+		if err := m.manager.Remove(m.bookmark.Name); err != nil {
+			panic(err)
+		}
+	}
+
+	updated.Name = m.inputs[0].Value()
+	updated.URL = m.inputs[1].Value()
+	updated.Author = m.inputs[2].Value()
+	updated.Tags = utils.ToList(m.inputs[3].Value())
+	updatedCategory := m.inputs[4].Value()
+
+	if m.category != updatedCategory {
+		m.manager = bookmarks.NewBookmarkManager(false, updatedCategory)
+	}
+
+	if ok, err := m.manager.Upsert(updated); err != nil {
+		panic(err)
+	} else if ok {
+		return tuicommands.SaveBookmark(updated)
+	}
+
+	return nil
 }
