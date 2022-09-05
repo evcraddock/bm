@@ -73,11 +73,6 @@ func New(category, selectedBookmark string, selectedIndex int, windowSize *tea.W
 	m.SetFilteringEnabled(false)
 	m.SetShowStatusBar(len(m.Items()) > 0)
 
-	if windowSize != nil {
-		width, height := bookmarkModel.getWindowSize()
-		m.SetSize(width, height)
-	}
-
 	bookmarkModel.list = m
 	return bookmarkModel
 }
@@ -137,7 +132,13 @@ func (b Model) View() string {
 }
 
 func (b Model) getWindowSize() (int, int) {
-	return b.windowSize.Width, b.windowSize.Height - marginHeight
+	w, h := 0, 0
+	if b.windowSize != nil {
+		w = b.windowSize.Width
+		h = b.windowSize.Height - marginHeight
+	}
+
+	return w, h
 }
 
 func (b Model) getSelectedBookmark() tea.Cmd {
@@ -189,7 +190,12 @@ func (b Model) loadBookmarksList(category, bookmarkName string, selectedIndex in
 		}
 	}
 
-	m := list.New(items, list.NewDefaultDelegate(), 0, 0)
+	// w, h := 0, 0
+	// if b.windowSize != nil {
+	w, h := b.getWindowSize()
+	// }
+
+	m := list.New(items, list.NewDefaultDelegate(), w, h)
 	m.Select(index)
 	return m
 }

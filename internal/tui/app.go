@@ -31,7 +31,7 @@ type App struct {
 func New(category string) App {
 	bookmarkModel := bookmarktui.New(nil, category, nil)
 	bookmarksModel := bookmarkstui.New(category, "", 0, nil)
-	categoryModel := categorytui.New(category, nil)
+	categoryModel := categorytui.New(category, getTerminalSize())
 
 	return App{
 		bookmark:         bookmarkModel,
@@ -46,7 +46,7 @@ func (a App) Init() tea.Cmd {
 	return nil
 }
 
-func getTerminalSize() tea.WindowSizeMsg {
+func getTerminalSize() *tea.WindowSizeMsg {
 	w, h, _ := term.GetSize(int(os.Stdout.Fd()))
-	return tea.WindowSizeMsg{Width: w, Height: h}
+	return &tea.WindowSizeMsg{Width: w, Height: h}
 }
