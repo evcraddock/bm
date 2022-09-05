@@ -1,8 +1,7 @@
 package categorytui
 
 import (
-	"fmt"
-
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
@@ -11,7 +10,9 @@ import (
 )
 
 var (
-	docStyle = lipgloss.NewStyle().Margin(1, 1)
+	docStyle     = lipgloss.NewStyle().Margin(1, 1)
+	leftWidth    = 40
+	marginHeight = 4
 
 	title = lipgloss.NewStyle().
 		MarginLeft(1).
@@ -25,15 +26,30 @@ var (
 
 	itemSelectedStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("230"))
-
-	marginHeight = 4
 )
 
 type Model struct {
-	categories []categories.Category
+	list       list.Model
+	manager    *categories.CategoryManager
 	index      int
 	selected   categories.Category
 	windowSize *tea.WindowSizeMsg
+}
+
+type bmcategory struct {
+	categories.Category
+}
+
+func (i bmcategory) Title() string {
+	return i.Name
+}
+
+func (i bmcategory) Description() string {
+	return ""
+}
+
+func (i bmcategory) FilterValue() string {
+	return i.Name
 }
 
 func (m Model) Init() tea.Cmd {
@@ -41,20 +57,46 @@ func (m Model) Init() tea.Cmd {
 }
 
 func New(category string, windowSize *tea.WindowSizeMsg) Model {
-	manager := categories.NewCategoryManager()
-	l, err := manager.GetCategoryList()
+	m := Model{
+		manager:    categories.NewCategoryManager(),
+		windowSize: windowSize,
+	}
+
+	list := m.loadCategoryList(category)
+	list.Title = "Bookmark Manager"
+	list.SetShowFilter(false)
+	list.SetShowStatusBar(false)
+	list.SetFilteringEnabled(false)
+	list.SetShowHelp(false)
+
+	m.list = list
+	return m
+}
+
+func (m Model) loadCategoryList(category string) list.Model {
+	l, err := m.manager.GetCategoryList()
 	if err != nil {
 		panic(err)
 	}
 
-	m := Model{
-		categories: l,
-		windowSize: windowSize,
+	index := 0
+	items := []list.Item{}
+	for i := 0; i < len(l); i++ {
+		cat := l[i]
+		items = append(items, bmcategory{cat})
+		if cat.Name == category {
+			index = i
+		}
 	}
 
-	m.index = m.Index(category)
-	m.selected = l[m.index]
-	return m
+	d := list.NewDefaultDelegate()
+	d.ShowDescription = false
+	d.SetSpacing(1)
+
+	ci := list.New(items, d, leftWidth, m.windowSize.Height-marginHeight)
+	ci.Select(index)
+
+	return ci
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -68,34 +110,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "ctrl+c", "q":
 			return m, tea.Quit
 
-		case "up", "k":
-			if m.index > 0 {
-				m.index--
-			}
-			cmd = m.setSelected(false)
+		case "up", "down", "k", "j", "g", "G":
+			m.list, cmd = m.list.Update(msg)
+			cmds = append(cmds, m.setSelected(false))
+			cmds = append(cmds, cmd)
 
-		case "down", "j":
-			if m.index < len(m.categories)-1 {
-				m.index++
-			}
-			cmd = m.setSelected(false)
-
-		case "g":
-			m.index = 0
-			cmd = m.setSelected(false)
-
-		case "G":
-			if len(m.categories) > 0 {
-				m.index = len(m.categories) - 1
-			}
-			cmd = m.setSelected(false)
-
-		case "enter", " ", "o", "l", "tab":
+		case "enter", " ", "o", "tab":
 			cmd = m.setSelected(true)
 
 		case "ctrl+n":
 			cmd = m.createBookmark()
+
+		default:
+			m.list, cmd = m.list.Update(msg)
+
 		}
+
+	case tea.WindowSizeMsg:
+		m.windowSize = &msg
+		m.list.SetSize(m.getWindowSize())
 	}
 
 	cmds = append(cmds, cmd)
@@ -103,40 +136,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	var s string
-	for i, category := range m.categories {
-		cursor := "  "
-		name := itemStyle.SetString(category.Name).String()
-
-		if m.index == i {
-			cursor = itemSelectedStyle.SetString("->").String()
-			name = itemSelectedStyle.Background(lipgloss.Color("62")).SetString(category.Name).String()
-		}
-
-		s += lipgloss.NewStyle().Render(fmt.Sprintf("%s %s \n", cursor, name))
-	}
-
-	if m.windowSize != nil {
-		height := m.windowSize.Height - marginHeight
-		docStyle = docStyle.Height(height)
-	}
-
-	return docStyle.Render(fmt.Sprintf("%s \n\n%s", title, s))
+	return docStyle.Render(m.list.View())
 }
 
-func (m Model) Index(category string) int {
-	for i, c := range m.categories {
-		if c.Name == category {
-			return i
-		}
-	}
-
-	return 0
+func (b Model) getWindowSize() (int, int) {
+	return b.windowSize.Width, b.windowSize.Height - marginHeight
 }
 
 func (m Model) setSelected(switchView bool) tea.Cmd {
-	m.selected = m.categories[m.index]
-	return tuicommands.SelectCategory(m.selected.Name, switchView)
+	selectedItem := m.list.SelectedItem().(bmcategory)
+	return tuicommands.SelectCategory(selectedItem.Name, switchView)
 }
 
 func (m Model) createBookmark() tea.Cmd {
