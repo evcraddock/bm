@@ -17,8 +17,6 @@ var deleteBookmarkCmd = &cobra.Command{
 
 func init() {
 	deleteCmd.AddCommand(deleteBookmarkCmd)
-
-	deleteBookmarkCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
 }
 
 func cmdDeleteBookmark(cmd *cobra.Command, args []string) {

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
@@ -18,8 +19,6 @@ var createBookmarkCmd = &cobra.Command{
 
 func init() {
 	createCmd.AddCommand(createBookmarkCmd)
-
-	createBookmarkCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
 }
 
 func cmdCreateBookmark(cmd *cobra.Command, args []string) {
@@ -35,6 +34,10 @@ func cmdCreateBookmark(cmd *cobra.Command, args []string) {
 	if err != nil {
 		fmt.Println("invalid url")
 		os.Exit(1)
+	}
+
+	if category == "" {
+		category = viper.GetString("DefaultCategory")
 	}
 
 	manager := bookmarks.NewBookmarkManager(false, category)

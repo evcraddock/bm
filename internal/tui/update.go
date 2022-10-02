@@ -38,6 +38,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tuicommands.ReloadBookmarksMsg:
 		a.bookmarks = bookmarkstui.New(a.selectedCategory, "", msg.SelectedIndex, &a.windowSize)
+		a.category = categorytui.New(a.selectedCategory, &a.windowSize)
 
 	case tuicommands.SaveBookmarkMsg:
 		bookmark := msg.SelectedBookmark

@@ -6,18 +6,29 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
+	"github.com/evcraddock/bm/internal/config"
 	"github.com/evcraddock/bm/internal/tui"
 )
 
 var (
-	category = "readlater"
+	category string
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "bm",
-	Short: "bm",
+	Short: "bm is a command line tool for managing bookmarks",
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		config.LoadConfig()
+		viper.BindPFlag("category", cmd.PersistentFlags().Lookup("category"))
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
+		if category == "" {
+			category = viper.GetString("DefaultCategory")
+		}
+
 		if len(args) == 0 {
 			p := tea.NewProgram(tui.New(category))
 			if err := p.Start(); err != nil {
@@ -49,12 +60,12 @@ var updateCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
+	rootCmd.PersistentFlags().StringVarP(&category, "category", "c", "", "category")
+	// viper.BindPFlag("category", rootCmd.PersistentFlags().Lookup("category"))
 
 	rootCmd.AddCommand(listCmd)
 	rootCmd.AddCommand(createCmd)
 	rootCmd.AddCommand(deleteCmd)
-	// rootCmd.AddCommand(updateCmd)
 }
 
 func Execute() {

@@ -26,8 +26,6 @@ var listCategoriesCmd = &cobra.Command{
 func init() {
 	listCmd.AddCommand(listBookmarksCmd)
 	listCmd.AddCommand(listCategoriesCmd)
-
-	listBookmarksCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
 }
 
 func cmdListCategories(cmd *cobra.Command, args []string) {
@@ -56,6 +54,10 @@ func cmdListCategories(cmd *cobra.Command, args []string) {
 }
 
 func cmdListBookmarks(cmd *cobra.Command, args []string) {
+	// if category == "" {
+	// 	category = viper.GetString("DefaultCategory")
+	// }
+
 	manager := bookmarks.NewBookmarkManager(false, category)
 	bookmarks, err := manager.LoadBookmarks()
 	if err != nil {
@@ -64,8 +66,9 @@ func cmdListBookmarks(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	if len(bookmarks) == 0 {
-		fmt.Println("no bookmarks were found")
+	count := len(bookmarks)
+	if count == 0 {
+		fmt.Printf("no bookmarks were found for category %s\n", category)
 		os.Exit(1)
 	}
 
@@ -77,5 +80,11 @@ func cmdListBookmarks(cmd *cobra.Command, args []string) {
 		fmt.Fprintln(writer, row)
 	}
 
+	label := "bookmark"
+	if count > 1 {
+		label = "bookmarks"
+	}
+
+	fmt.Fprintln(writer, fmt.Sprintf("\nFound %v %s for category %s", count, label, category))
 	writer.Flush()
 }

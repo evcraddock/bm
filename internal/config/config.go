@@ -20,19 +20,21 @@ var (
 func init() {
 	usr, err := user.Current()
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "could not initialize: %v\n", err)
+		os.Exit(1)
 	}
 
 	homeDirectory = usr.HomeDir
 	configFilePath = fmt.Sprintf("%s/%s", homeDirectory, configFileFolder)
 	err = createConfigFile()
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "could not create config file: %v\n", err)
+		os.Exit(1)
 	}
 
 }
 
-func LoadConfig() error {
+func LoadConfig() {
 	viper.SetConfigName(configName)
 	viper.AddConfigPath(configFilePath)
 	viper.SetEnvPrefix(envPrefix)
@@ -40,10 +42,9 @@ func LoadConfig() error {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		return fmt.Errorf("could not load config file %s", err)
+		fmt.Fprintf(os.Stderr, "could not load config file %v\n", err)
+		os.Exit(1)
 	}
-
-	return nil
 }
 
 func saveDefaults() error {
@@ -52,6 +53,7 @@ func saveDefaults() error {
 
 	viper.Set("bookmarkfolder", fmt.Sprintf("%s/%s", homeDirectory, ".local/bookmarks"))
 	viper.Set("addtaskcommand", "toduit create '{Title}' '{URL}' -p Inbox")
+	viper.Set("defaultcategory", "readlater")
 	return viper.WriteConfig()
 }
 

@@ -57,7 +57,6 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 	for i := range m.inputs {
 		t = textinput.New()
 		t.CursorStyle = cursorStyle
-		t.CharLimit = 32
 
 		switch i {
 		case 0:
@@ -74,7 +73,9 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 			t.SetValue(m.bookmark.Author)
 		case 3:
 			t.Placeholder = "Tags"
-			t.SetValue(strings.Join(m.bookmark.Tags, ","))
+			if len(m.bookmark.Tags) > 0 {
+				t.SetValue(strings.Join(m.bookmark.Tags, ","))
+			}
 		case 4:
 			t.Placeholder = "Category"
 			t.SetValue(category)

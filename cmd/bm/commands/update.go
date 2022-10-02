@@ -14,8 +14,6 @@ var updateBookmarkCmd = &cobra.Command{
 
 func init() {
 	updateCmd.AddCommand(updateBookmarkCmd)
-
-	updateBookmarkCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
 }
 
 func cmdUpdateBookmark(cmd *cobra.Command, args []string) {
