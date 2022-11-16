@@ -19,6 +19,8 @@ var createBookmarkCmd = &cobra.Command{
 
 func init() {
 	createCmd.AddCommand(createBookmarkCmd)
+
+	createBookmarkCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
 }
 
 func cmdCreateBookmark(cmd *cobra.Command, args []string) {
