@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/evcraddock/bm/pkg/utils"
+	readability "github.com/philipjkim/goreadability"
 	"github.com/spf13/viper"
 )
 
@@ -148,7 +149,20 @@ func (b *BookmarkManager) Upsert(bookmark *Bookmark) (bool, error) {
 }
 
 // Create save a new bookmark
-func (b *BookmarkManager) Create(title, url string) (bool, error) {
+func (b *BookmarkManager) Create(url, title string) (bool, error) {
+	if title == "" {
+		opt := readability.NewOption()
+		opt.ImageRequestTimeout = 3000
+		content, err := readability.Extract(url, opt)
+		if err != nil {
+			return false, err
+		}
+
+		if content.Title != "" {
+			title = content.Title
+		}
+	}
+
 	bookmark := &Bookmark{
 		Name:      title,
 		URL:       url,

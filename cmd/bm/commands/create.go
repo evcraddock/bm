@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/evcraddock/bm/pkg/bookmarks"
 )
@@ -18,18 +19,19 @@ var createBookmarkCmd = &cobra.Command{
 
 func init() {
 	createCmd.AddCommand(createBookmarkCmd)
-
-	createBookmarkCmd.Flags().StringVarP(&category, "category", "c", "readlater", "category")
 }
 
 func cmdCreateBookmark(cmd *cobra.Command, args []string) {
-	if len(args) != 2 {
-		fmt.Println("bm create bookmark {title} {url}")
+	var title string
+	if len(args) < 1 {
+		fmt.Println("bm create bookmark {url} ({title})")
 		os.Exit(1)
 	}
 
-	title := args[0]
-	link := args[1]
+	link := args[0]
+	if len(args) == 2 {
+		title = args[1]
+	}
 
 	_, err := url.ParseRequestURI(link)
 	if err != nil {
@@ -37,8 +39,12 @@ func cmdCreateBookmark(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if category == "" {
+		category = viper.GetString("DefaultCategory")
+	}
+
 	manager := bookmarks.NewBookmarkManager(false, category)
-	if ok, err := manager.Create(title, link); ok {
+	if ok, err := manager.Create(link, title); ok {
 		fmt.Printf("Saved Bookmark %s\n", title)
 	} else if err != nil {
 		// TODO: add a proper log and log error in debug mode
