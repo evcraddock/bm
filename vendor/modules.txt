@@ -5,7 +5,7 @@ github.com/PuerkitoBio/goquery
 github.com/andybalholm/cascadia
 # github.com/atotto/clipboard v0.1.4
 github.com/atotto/clipboard
-# github.com/charmbracelet/bubbles v0.13.0
+# github.com/charmbracelet/bubbles v0.14.0
 ## explicit
 github.com/charmbracelet/bubbles/help
 github.com/charmbracelet/bubbles/key

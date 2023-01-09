@@ -1,6 +1,8 @@
 package categorytui
 
 import (
+	"sort"
+
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -64,9 +66,7 @@ func New(category string, windowSize *tea.WindowSizeMsg) Model {
 
 	list := m.loadCategoryList(category)
 	list.Title = "Bookmark Manager"
-	list.SetShowFilter(false)
 	list.SetShowStatusBar(false)
-	list.SetFilteringEnabled(false)
 	list.SetShowHelp(false)
 
 	m.list = list
@@ -78,6 +78,10 @@ func (m Model) loadCategoryList(category string) list.Model {
 	if err != nil {
 		panic(err)
 	}
+
+	sort.Slice(l, func(i, j int) bool {
+		return l[i].Name < (l[j].Name)
+	})
 
 	index := 0
 	items := []list.Item{}
@@ -101,38 +105,34 @@ func (m Model) loadCategoryList(category string) list.Model {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.windowSize = &msg
+		m.list.SetSize(m.getWindowSize())
+
 	case tea.KeyMsg:
+		if m.list.FilterState() == list.Filtering {
+			break
+		}
+
 		switch msg.String() {
 
 		case "esc", "ctrl+c", "q":
 			return m, tea.Quit
 
-		case "up", "down", "k", "j", "g", "G":
-			m.list, cmd = m.list.Update(msg)
-			cmds = append(cmds, m.setSelected(false))
-			cmds = append(cmds, cmd)
-
 		case "enter", " ", "o", "tab":
-			cmd = m.setSelected(true)
+			return m, m.setSelected(true)
 
 		case "ctrl+n":
-			cmd = m.createBookmark()
-
-		default:
-			m.list, cmd = m.list.Update(msg)
+			return m, m.createBookmark()
 
 		}
 
-	case tea.WindowSizeMsg:
-		m.windowSize = &msg
-		m.list.SetSize(m.getWindowSize())
 	}
 
-	cmds = append(cmds, cmd)
-	return m, tea.Batch(cmds...)
+	m.list, cmd = m.list.Update(msg)
+	return m, tea.Batch(cmd, m.setSelected(false))
 }
 
 func (m Model) View() string {
@@ -143,7 +143,22 @@ func (b Model) getWindowSize() (int, int) {
 	return b.windowSize.Width, b.windowSize.Height - marginHeight
 }
 
+func (m Model) GetSelected() *bmcategory {
+	item := m.list.SelectedItem()
+	if item == nil {
+		return nil
+	}
+
+	value := item.(bmcategory)
+	return &value
+}
+
 func (m Model) setSelected(switchView bool) tea.Cmd {
+	s := m.GetSelected()
+	if s == nil {
+		return nil
+	}
+
 	selectedItem := m.list.SelectedItem().(bmcategory)
 	return tuicommands.SelectCategory(selectedItem.Name, switchView)
 }
