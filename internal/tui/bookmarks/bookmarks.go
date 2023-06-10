@@ -96,7 +96,7 @@ func (b Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return b, tea.Quit
 
-		case "ctrl+o":
+		case "ctrl+o", "enter":
 			b.openSelectedUrl()
 
 		case "ctrl+r":
@@ -190,11 +190,7 @@ func (b Model) loadBookmarksList(category, bookmarkName string, selectedIndex in
 		}
 	}
 
-	// w, h := 0, 0
-	// if b.windowSize != nil {
 	w, h := b.getWindowSize()
-	// }
-
 	m := list.New(items, list.NewDefaultDelegate(), w, h)
 	m.Select(index)
 	return m
@@ -202,7 +198,7 @@ func (b Model) loadBookmarksList(category, bookmarkName string, selectedIndex in
 
 func (b Model) openSelectedUrl() tea.Msg {
 	bookmark := b.list.SelectedItem().(bookmark)
-	cmd := exec.Command("xdg-open", bookmark.URL)
+	cmd := exec.Command("open", bookmark.URL)
 	err := cmd.Start()
 	if err != nil {
 		return errMsg{err}

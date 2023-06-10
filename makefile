@@ -2,13 +2,17 @@
 help: ## Show this help
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: build
-build: ## Build the application
-	GOOS=linux GOARCH=amd64 go build -o .build/bm cmd/bm/bm.go
+.PHONY: build-linux
+build-linux: ## Build the application
+	GOOS=linux GOARCH=amd64 go build -o .build/linux/bm cmd/bm/bm.go
 
-.PHONY: install
-install: build ## Install the application
-	cp .build/bm ${GOPATH}/bin/bm
+.PHONY: build-mac
+build-mac: ## Build the app for macos
+	GOOS=darwin GOARCH=amd64 go build -o .build/mac/bm cmd/bm/bm.go
+
+# .PHONY: install
+# install: build ## Install the application
+# 	cp .build/bm ${GOPATH}/bin/bm
 
 .PHONY: fmt
 fmt: ## Run all formatings

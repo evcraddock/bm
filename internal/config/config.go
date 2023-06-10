@@ -10,6 +10,7 @@ import (
 
 var (
 	configFileFolder = ".config/bm/"
+  bookmarksFolder = ".local/bookmarks"
 	configName       = "config"
 	// configName = "config-dev"
 	envPrefix = "BM"
@@ -25,6 +26,10 @@ func init() {
 	}
 
 	homeDirectory = usr.HomeDir
+  if err := createBookmarksFolder(); err != nil {
+    panic(err)
+  }
+
 	configFilePath = fmt.Sprintf("%s/%s", homeDirectory, configFileFolder)
 	err = createConfigFile()
 	if err != nil {
@@ -51,9 +56,18 @@ func saveDefaults() error {
 	viper.SetConfigName(configName)
 	viper.AddConfigPath(configFilePath)
 
-	viper.Set("bookmarkfolder", fmt.Sprintf("%s/%s", homeDirectory, ".local/bookmarks"))
+	viper.Set("bookmarkfolder", fmt.Sprintf("%s/%s", homeDirectory, bookmarksFolder))
 	viper.Set("addtaskcommand", "toduit create '{Title}' '{URL}' -p Inbox")
 	return viper.WriteConfig()
+}
+
+func createBookmarksFolder() error {
+	filepath := fmt.Sprintf("%s/%s", homeDirectory, bookmarksFolder)
+  if err := os.MkdirAll(filepath, 0770); err != nil {
+    return err
+  }
+
+  return nil
 }
 
 func createConfigFile() error {
