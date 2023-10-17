@@ -57,7 +57,7 @@ func New(bookmark *bookmarks.Bookmark, category string, windowSize *tea.WindowSi
 	for i := range m.inputs {
 		t = textinput.New()
 		t.CursorStyle = cursorStyle
-		t.CharLimit = 32
+		t.CharLimit = 128
 
 		switch i {
 		case 0:

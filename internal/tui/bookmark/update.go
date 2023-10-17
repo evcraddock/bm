@@ -46,6 +46,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			cmds := make([]tea.Cmd, len(m.inputs))
 			for i := 0; i <= len(m.inputs)-1; i++ {
+				m.inputs[i].CharLimit = 128
+
 				if i == m.focusIndex {
 					// Set focused state
 					cmds[i] = m.inputs[i].Focus()
